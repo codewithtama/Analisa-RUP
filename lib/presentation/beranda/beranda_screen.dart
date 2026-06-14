@@ -69,6 +69,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
             ),
           ],
         ),
+        buttonPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        actionsOverflowButtonSpacing: 12,
         actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         actionsAlignment: MainAxisAlignment.spaceBetween,
         actions: [
