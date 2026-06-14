@@ -13,9 +13,7 @@ class ImporScreen extends StatelessWidget {
     return ChangeNotifierProvider<ImporProvider>(
       create: (context) => ImporProvider(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Impor Berkas RUP"),
-        ),
+        appBar: AppBar(title: const Text("Impor Berkas RUP")),
         body: Consumer2<ImporProvider, BerandaProvider>(
           builder: (context, imporProvider, berandaProvider, child) {
             return SingleChildScrollView(
@@ -78,7 +76,10 @@ class ImporScreen extends StatelessWidget {
                       icon: const Icon(Icons.search_rounded),
                       label: const Text("Pilih Berkas"),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
                         minimumSize: const Size(220, 52),
                       ),
                     ),
@@ -99,20 +100,88 @@ class ImporScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPresetList(BuildContext context, ImporProvider provider, BerandaProvider berandaProvider) {
+  Widget _buildPresetList(
+    BuildContext context,
+    ImporProvider provider,
+    BerandaProvider berandaProvider,
+  ) {
     final List<Map<String, String>> presets = [
-      {"name": "Arsip Nasional Republik Indonesia", "path": "assets/dataRUP/RUP ARSIP NASIONAL REPUBLIK INDONESIA.xlsx"},
-      {"name": "Badan Gizi Nasional", "path": "assets/dataRUP/RUP BADAN GIZI NASIONAL.xlsx"},
-      {"name": "Badan Intelijen Negara", "path": "assets/dataRUP/RUP BADAN INTELIJEN NEGARA.xlsx"},
-      {"name": "Badan Narkotika Nasional", "path": "assets/dataRUP/RUP BADAN NARKOTIKA NASIONAL.xlsx"},
-      {"name": "Badan Pemeriksa Keuangan", "path": "assets/dataRUP/RUP BADAN PEMERIKSA KEUANGAN.xlsx"},
-      {"name": "Badan Siber dan Sandi Negara", "path": "assets/dataRUP/RUP BADAN SIBER DAN SANDI NEGARA.xlsx"},
-      {"name": "Bendahara Umum Negara", "path": "assets/dataRUP/RUP BENDAHARA UMUM NEGARA.xlsx"},
-      {"name": "Dewan Perwakilan Rakyat", "path": "assets/dataRUP/RUP DEWAN PERWAKILAN RAKYAT.xlsx"},
-      {"name": "Kementerian Sekretariat Negara", "path": "assets/dataRUP/RUP KEMENTRIAN SEKRETARIAT NEGARA.xlsx"},
-      {"name": "Kepolisian Negara Republik Indonesia", "path": "assets/dataRUP/RUP KEPOLISIAN REPUBLIK INDONESIA.xlsx"},
-      {"name": "Majelis Permusyawaratan Rakyat", "path": "assets/dataRUP/RUP MAJELIS PERMUSYAWARATAN RAKYAT.xlsx"},
-      {"name": "Pemerintah Kota Tangerang Selatan", "path": "assets/dataRUP/RUP TANGSEL.xlsx"},
+      {
+        "name": "Arsip Nasional Republik Indonesia",
+        "path": "assets/dataRUP/RUP ARSIP NASIONAL REPUBLIK INDONESIA.xlsx",
+      },
+      {
+        "name": "Badan Gizi Nasional",
+        "path": "assets/dataRUP/RUP BADAN GIZI NASIONAL.xlsx",
+      },
+      {
+        "name": "Badan Intelijen Negara",
+        "path": "assets/dataRUP/RUP BADAN INTELIJEN NEGARA.xlsx",
+      },
+      {
+        "name": "Badan Narkotika Nasional",
+        "path": "assets/dataRUP/RUP BADAN NARKOTIKA NASIONAL.xlsx",
+      },
+      {
+        "name": "Badan Pemeriksa Keuangan",
+        "path": "assets/dataRUP/RUP BADAN PEMERIKSA KEUANGAN.xlsx",
+      },
+      {
+        "name": "Badan Siber dan Sandi Negara",
+        "path": "assets/dataRUP/RUP BADAN SIBER DAN SANDI NEGARA.xlsx",
+      },
+      {
+        "name": "Bendahara Umum Negara",
+        "path": "assets/dataRUP/RUP BENDAHARA UMUM NEGARA.xlsx",
+      },
+      {
+        "name": "Dewan Perwakilan Rakyat",
+        "path": "assets/dataRUP/RUP DEWAN PERWAKILAN RAKYAT.xlsx",
+      },
+      {
+        "name": "Kejaksaan Republik Indonesia",
+        "path": "assets/dataRUP/RUP KEJAKSAAN REPUBLIK INDONESIA.xlsx",
+      },
+      {
+        "name": "Kementerian Pertahanan",
+        "path": "assets/dataRUP/RUP KEMENTRIAN PERTAHANAN.xlsx",
+      },
+      {
+        "name": "Kementerian Sekretariat Negara",
+        "path": "assets/dataRUP/RUP KEMENTRIAN SEKRETARIAT NEGARA.xlsx",
+      },
+      {
+        "name": "Kepolisian Negara Republik Indonesia",
+        "path": "assets/dataRUP/RUP KEPOLISIAN REPUBLIK INDONESIA.xlsx",
+      },
+      {
+        "name": "Komisi Pemberantasan Korupsi",
+        "path": "assets/dataRUP/RUP KOMISI PEMBERANTASAN KORUPSI.xlsx",
+      },
+      {
+        "name": "Komnas HAM",
+        "path": "assets/dataRUP/RUP KOMNAS HAM.xlsx",
+      },
+      {
+        "name": "Mahkamah Agung",
+        "path": "assets/dataRUP/RUP MAHKAMAH AGUNG.xlsx",
+      },
+      {
+        "name": "Mahkamah Konstitusi",
+        "path": "assets/dataRUP/RUP MAHKAMAH KONSTITUSI.xlsx",
+      },
+      {
+        "name": "Majelis Permusyawaratan Rakyat",
+        "path": "assets/dataRUP/RUP MAJELIS PERMUSYAWARATAN RAKYAT.xlsx",
+      },
+      {
+        "name": "Otorita Ibu Kota Nusantara (IKN)",
+        "path": "assets/dataRUP/RUP OTORITA IBU KOTA NASIONAL (IKN).xlsx",
+      },
+      {
+        "name": "Pemerintah Kota Tangerang Selatan",
+        "path": "assets/dataRUP/RUP TANGSEL.xlsx",
+      },
     ];
 
     return Column(
@@ -123,7 +192,13 @@ class ImporScreen extends StatelessWidget {
             Expanded(child: Divider()),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text("Atau Pilih Data RUP 2026", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: Text(
+                "Atau Pilih Data RUP 2026",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             Expanded(child: Divider()),
           ],
@@ -149,23 +224,41 @@ class ImporScreen extends StatelessWidget {
               value: null, // Always show hint after selection imports
               hint: const Row(
                 children: [
-                  Icon(Icons.folder_shared_rounded, color: warnaAksen, size: 22),
+                  Icon(
+                    Icons.folder_shared_rounded,
+                    color: warnaAksen,
+                    size: 22,
+                  ),
                   SizedBox(width: 12),
-                  Text("Pilih Arsip Instansi...", style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "Pilih Arsip Instansi...",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
-              icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: warnaAksen),
+              icon: const Icon(
+                Icons.arrow_drop_down_circle_outlined,
+                color: warnaAksen,
+              ),
               items: presets.map((preset) {
                 return DropdownMenuItem<Map<String, String>>(
                   value: preset,
                   child: Row(
                     children: [
-                      const Icon(Icons.description_outlined, color: warnaPrimer, size: 18),
+                      const Icon(
+                        Icons.description_outlined,
+                        color: warnaPrimer,
+                        size: 18,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           preset["name"]!,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: warnaPrimer,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -244,10 +337,7 @@ class ImporScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     provider.statusText,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -277,7 +367,9 @@ class ImporScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isSuccess ? warnaNormal.withValues(alpha: 0.3) : warnaKritis.withValues(alpha: 0.3),
+          color: isSuccess
+              ? warnaNormal.withValues(alpha: 0.3)
+              : warnaKritis.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

@@ -171,6 +171,28 @@ void parseFileIsolate(ImportParams params) {
       }
     }
 
+    // Check if CSS headers are used (e.g. scraped HTML table converted to excel)
+    final List<String> headers = headerRow.map((c) => _getCellValueString(c).toLowerCase()).toList();
+    final bool isCssHeader = headers.contains('w-full') || headers.contains('font-mono');
+    if (isCssHeader && (idxNamaPaket == -1 || idxMetodePengadaan == -1 || idxTotalNilai == -1)) {
+      if (headers.length >= 10) {
+        idxNamaSatuanKerja = 1;
+        idxCaraPengadaan = 2;
+        idxMetodePengadaan = 3;
+        idxJenisPengadaan = 4;
+        idxNamaPaket = 5;
+        idxKodeRup = 6;
+        idxTotalNilai = 9;
+      } else if (headers.length == 9) {
+        idxCaraPengadaan = 1;
+        idxMetodePengadaan = 2;
+        idxJenisPengadaan = 3;
+        idxNamaPaket = 4;
+        idxKodeRup = 5;
+        idxTotalNilai = 8;
+      }
+    }
+
     // Check mandatory headers
     if (idxNamaPaket == -1 || idxMetodePengadaan == -1 || idxTotalNilai == -1) {
       params.sendPort.send(ImportResult(
@@ -202,9 +224,12 @@ void parseFileIsolate(ImportParams params) {
         continue;
       }
 
-      final String namaInstansiVal = idxNamaInstansi != -1 && idxNamaInstansi < row.length
+      final String parsedInstansi = idxNamaInstansi != -1 && idxNamaInstansi < row.length
           ? _getCellValueString(row[idxNamaInstansi])
           : '';
+      final String namaInstansiVal = parsedInstansi.isNotEmpty
+          ? parsedInstansi
+          : _getInstansiFromFilename(params.filePath);
       final String rawSatuanKerja = idxNamaSatuanKerja != -1 && idxNamaSatuanKerja < row.length
           ? _getCellValueString(row[idxNamaSatuanKerja])
           : '';
@@ -285,8 +310,54 @@ String _getCellValueString(dynamic value) {
 double? _parseDouble(dynamic val) {
   if (val == null) return null;
   if (val is num) return val.toDouble();
-  final String cleaned = val.toString().replaceAll(RegExp(r'[^0-9.-]'), '');
+  final String s = val.toString().trim();
+  if (s.isEmpty) return null;
+
+  String cleaned = s.replaceAll(RegExp(r'[Rr]p\.?'), '').trim();
+  // Remove non-breaking spaces
+  cleaned = cleaned.replaceAll(RegExp(r'\u00A0'), '').replaceAll(' ', '');
+
+  final hasComma = cleaned.contains(',');
+  final hasDot = cleaned.contains('.');
+
+  if (hasComma && hasDot) {
+    final commaIndex = cleaned.lastIndexOf(',');
+    final dotIndex = cleaned.lastIndexOf('.');
+    if (commaIndex > dotIndex) {
+      cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      cleaned = cleaned.replaceAll(',', '');
+    }
+  } else if (hasComma) {
+    final parts = cleaned.split(',');
+    if (parts.last.length == 3) {
+      cleaned = cleaned.replaceAll(',', '');
+    } else {
+      cleaned = cleaned.replaceAll(',', '.');
+    }
+  } else if (hasDot) {
+    final dotCount = '.'.allMatches(cleaned).length;
+    if (dotCount > 1) {
+      cleaned = cleaned.replaceAll('.', '');
+    } else {
+      final parts = cleaned.split('.');
+      if (parts.last.length == 3) {
+        cleaned = cleaned.replaceAll('.', '');
+      }
+    }
+  }
+
+  cleaned = cleaned.replaceAll(RegExp(r'[^0-9.-]'), '');
   return double.tryParse(cleaned);
+}
+
+String _getInstansiFromFilename(String filePath) {
+  final name = filePath.split('/').last.split('\\').last;
+  String clean = name.replaceAll('.xlsx', '').replaceAll('.csv', '');
+  if (clean.startsWith('RUP ')) {
+    clean = clean.substring(4);
+  }
+  return clean.trim();
 }
 
 String _cleanSatuanKerja(String raw) {
