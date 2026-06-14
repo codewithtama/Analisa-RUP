@@ -179,7 +179,7 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
     if (!hasSkpd && !hasMetode && !hasTingkat) return const SizedBox.shrink();
 
     String getTingkatLabel(int t) {
-      if (t == 3) return "Kritis";
+      if (t == 3) return "Perlu Perhatian Segera";
       if (t == 2) return "Tinggi";
       if (t == 1) return "Waspada";
       return "Wajar";
@@ -463,7 +463,7 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                         decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
                         items: [
                           const DropdownMenuItem<int>(value: -1, child: Text("Semua Tingkat", style: TextStyle(fontSize: 13))),
-                          const DropdownMenuItem<int>(value: 3, child: Text("Kritis (Perlu Perhatian Segera)", style: TextStyle(fontSize: 13))),
+                          const DropdownMenuItem<int>(value: 3, child: Text("Perlu Perhatian Segera", style: TextStyle(fontSize: 13))),
                           const DropdownMenuItem<int>(value: 2, child: Text("Tinggi (Perlu Diperiksa)", style: TextStyle(fontSize: 13))),
                           const DropdownMenuItem<int>(value: 1, child: Text("Waspada (Pantau)", style: TextStyle(fontSize: 13))),
                           const DropdownMenuItem<int>(value: 0, child: Text("Wajar (Normal)", style: TextStyle(fontSize: 13))),

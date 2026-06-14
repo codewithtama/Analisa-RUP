@@ -188,7 +188,7 @@ class BerandaScreen extends StatelessWidget {
           children: [
             _buildRiskRow(
               color: warnaKritis,
-              label: "Perlu Perhatian Segera (Kritis)",
+              label: "Perlu Perhatian Segera",
               count: stats.totalKritis,
             ),
             const Divider(height: 20, thickness: 0.5),
