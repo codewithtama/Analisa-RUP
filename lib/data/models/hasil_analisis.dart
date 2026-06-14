@@ -4,6 +4,8 @@ class RingkasanKejanggalan {
   final int jumlahTemuan;
   final double totalNilaiTerdampak;
   final int tingkatRisiko; // 1=waspada, 2=tinggi, 3=kritis
+  final String Function(double)? focusedPenjelasan;
+  final bool focusedLimit;
 
   RingkasanKejanggalan({
     required this.namaKategori,
@@ -11,6 +13,8 @@ class RingkasanKejanggalan {
     required this.jumlahTemuan,
     required this.totalNilaiTerdampak,
     required this.tingkatRisiko,
+    this.focusedPenjelasan,
+    this.focusedLimit = false,
   });
 }
 

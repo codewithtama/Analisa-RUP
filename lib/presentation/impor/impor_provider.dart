@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../data/import_service.dart';
+import '../../data/hive_service.dart';
 import '../../data/models/paket_pengadaan.dart';
 
 class ImporProvider with ChangeNotifier {
   final ImportService _importService = ImportService();
+  final HiveService _hiveService = HiveService();
 
   bool _isImporting = false;
   double _progress = 0.0;
@@ -56,11 +58,19 @@ class ImporProvider with ChangeNotifier {
       _statusText = "Membaca berkas...";
       notifyListeners();
 
-      final result = await _importService.importFile(path, (progressUpdate) {
-        _progress = progressUpdate.total > 0 ? (progressUpdate.current / progressUpdate.total) : 0.0;
-        _statusText = "${progressUpdate.status} (${progressUpdate.current}/${progressUpdate.total} baris)";
-        notifyListeners();
-      });
+      final double batasPL = await _hiveService.getBatasPL();
+      final double batasPenunjukan = await _hiveService.getBatasPenunjukan();
+
+      final result = await _importService.importFile(
+        path,
+        batasPL,
+        batasPenunjukan,
+        (progressUpdate) {
+          _progress = progressUpdate.total > 0 ? (progressUpdate.current / progressUpdate.total) : 0.0;
+          _statusText = "${progressUpdate.status} (${progressUpdate.current}/${progressUpdate.total} baris)";
+          notifyListeners();
+        },
+      );
 
       _importResult = result;
       if (result.isSuccess && result.paketList.isNotEmpty) {

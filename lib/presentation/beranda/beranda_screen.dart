@@ -18,6 +18,13 @@ class BerandaScreen extends StatelessWidget {
         title: const Text("Pantau Pengadaan"),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings_rounded),
+            tooltip: "Pengaturan Analisis",
+            onPressed: () {
+              context.push('/pengaturan');
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: "Muat Ulang Data",
             onPressed: () {

@@ -238,8 +238,8 @@ class RingkasanScreen extends StatelessWidget {
 
     double maxBudget = 1.0;
     for (final entry in provider.topSkpdBudget) {
-      if (entry.value > maxBudget) {
-        maxBudget = entry.value;
+      if (entry.totalAnggaran > maxBudget) {
+        maxBudget = entry.totalAnggaran;
       }
     }
 
@@ -250,15 +250,46 @@ class RingkasanScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Top 5 Satuan Kerja Anggaran Terbesar (SKPD)",
+              "Top 5 Satuan Kerja Anggaran Terbesar (Rasio Temuan vs Wajar)",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: warnaNormal,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text("Wajar", style: TextStyle(fontSize: 11, color: Colors.black54)),
+                const SizedBox(width: 16),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: warnaKritis,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text("Temuan Anomali", style: TextStyle(fontSize: 11, color: Colors.black54)),
+              ],
             ),
             const SizedBox(height: 20),
             ...List.generate(provider.topSkpdBudget.length, (index) {
               final entry = provider.topSkpdBudget[index];
-              final ratio = entry.value / maxBudget;
+              final ratioNormal = entry.anggaranNormal / maxBudget;
+              final ratioBermasalah = entry.anggaranBermasalah / maxBudget;
+
+              final normalPercent = entry.totalAnggaran > 0 ? (entry.anggaranNormal / entry.totalAnggaran * 100) : 0.0;
+              final bermasalahPercent = entry.totalAnggaran > 0 ? (entry.anggaranBermasalah / entry.totalAnggaran * 100) : 0.0;
+
               return Padding(
-                padding: const EdgeInsets.only(bottom: 14.0),
+                padding: const EdgeInsets.only(bottom: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -267,7 +298,7 @@ class RingkasanScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            "${index + 1}. ${entry.key}",
+                            "${index + 1}. ${entry.namaSkpd}",
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -278,36 +309,60 @@ class RingkasanScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          formatRupiah(entry.value),
+                          "Total: ${formatRupiah(entry.totalAnggaran)}",
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: warnaAksen,
+                            color: warnaPrimer,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Stack(
-                      children: [
-                        Container(
-                          height: 8,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final totalWidth = constraints.maxWidth;
+                        final normalWidth = totalWidth * ratioNormal;
+                        final bermasalahWidth = totalWidth * ratioBermasalah;
+
+                        return Container(
+                          height: 10,
+                          width: totalWidth,
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                        ),
-                        FractionallySizedBox(
-                          widthFactor: ratio.clamp(0.02, 1.0),
-                          child: Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [warnaPrimer, warnaAksen],
-                              ),
-                              borderRadius: BorderRadius.circular(4),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: Row(
+                              children: [
+                                if (entry.anggaranNormal > 0)
+                                  Container(
+                                    width: normalWidth.clamp(0.0, totalWidth),
+                                    color: warnaNormal,
+                                  ),
+                                if (entry.anggaranBermasalah > 0)
+                                  Container(
+                                    width: bermasalahWidth.clamp(0.0, totalWidth),
+                                    color: warnaKritis,
+                                  ),
+                              ],
                             ),
                           ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Wajar: ${formatRupiah(entry.anggaranNormal)} (${normalPercent.toStringAsFixed(1)}%)",
+                          style: TextStyle(fontSize: 10, color: warnaNormal.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          "Temuan: ${formatRupiah(entry.anggaranBermasalah)} (${bermasalahPercent.toStringAsFixed(1)}%)",
+                          style: TextStyle(fontSize: 10, color: warnaKritis.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -331,23 +386,54 @@ class RingkasanScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "Indeks Kerawanan Satuan Kerja",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: warnaPrimer,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "Peringkat Satuan Kerja (SKPD) paling rawan kejanggalan anggaran.",
-            style: TextStyle(fontSize: 12, color: Colors.black45),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Indeks Kerawanan Satuan Kerja",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: warnaPrimer,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Peringkat Satuan Kerja (SKPD) paling rawan kejanggalan anggaran.",
+                      style: TextStyle(fontSize: 12, color: Colors.black45),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final paketList = Provider.of<BerandaProvider>(context, listen: false).paketList;
+                  final errorMsg = await provider.eksporLaporanTemuan(paketList);
+                  if (!context.mounted) return;
+                  if (errorMsg != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(errorMsg),
+                        backgroundColor: errorMsg.contains("berhasil") ? warnaNormal : warnaKritis,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.download_rounded, size: 18),
+                label: const Text("Ekspor CSV", style: TextStyle(fontSize: 12)),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(120, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),

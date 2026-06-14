@@ -32,18 +32,22 @@ class ImportResult {
 class ImportParams {
   final String filePath;
   final SendPort sendPort;
+  final double batasPL;
+  final double batasPenunjukan;
 
-  ImportParams(this.filePath, this.sendPort);
+  ImportParams(this.filePath, this.sendPort, this.batasPL, this.batasPenunjukan);
 }
 
 class ImportService {
   Future<ImportResult> importFile(
     String filePath,
+    double batasPL,
+    double batasPenunjukan,
     void Function(ImportProgress) onProgress,
   ) async {
     final receivePort = ReceivePort();
     
-    final params = ImportParams(filePath, receivePort.sendPort);
+    final params = ImportParams(filePath, receivePort.sendPort, batasPL, batasPenunjukan);
     final isolate = await Isolate.spawn(parseFileIsolate, params);
     
     ImportResult? result;
@@ -244,7 +248,11 @@ void parseFileIsolate(ImportParams params) {
 
     // Run analysis after importing
     final analisisService = AnalisisService();
-    analisisService.analisisSemua(paketList);
+    analisisService.analisisSemua(
+      paketList,
+      batasPL: params.batasPL,
+      batasPenunjukan: params.batasPenunjukan,
+    );
 
     int jumlahKejanggalan = 0;
     for (final p in paketList) {

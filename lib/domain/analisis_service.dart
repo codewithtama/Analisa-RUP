@@ -3,7 +3,11 @@ import '../data/models/hasil_analisis.dart';
 import '../utils/format_rupiah.dart';
 
 class AnalisisService {
-  void analisisSemua(List<PaketPengadaan> list) {
+  void analisisSemua(
+    List<PaketPengadaan> list, {
+    double batasPL = 200000000.0,
+    double batasPenunjukan = 500000000.0,
+  }) {
     // Maps for frequency checks
     // 3. Nama Paket Berulang dalam Satu Satuan Kerja: SKPD -> PaketNama -> count
     final Map<String, Map<String, int>> skpdPaketCount = {};
@@ -11,12 +15,15 @@ class AnalisisService {
     final Map<String, Set<String>> paketSkpdSet = {};
     // 6. Kata Kunci Paket Berulang Banyak di Satu SKPD: SKPD -> Keyword (50 chars) -> count
     final Map<String, Map<String, int>> skpdKeywordCount = {};
+    // 7. Grouping for Split Package check (SKPD -> Keyword -> List of packages)
+    final Map<String, Map<String, List<PaketPengadaan>>> skpdKeywordGroups = {};
 
     // First pass to compute counts
     for (final paket in list) {
       final skpd = paket.namaSatuanKerja.trim();
       final nama = paket.namaPaket.trim().toLowerCase();
-      
+      final keyword = nama.length > 50 ? nama.substring(0, 50) : nama;
+
       // For 3
       skpdPaketCount.putIfAbsent(skpd, () => {})[nama] = 
           (skpdPaketCount[skpd]![nama] ?? 0) + 1;
@@ -25,9 +32,14 @@ class AnalisisService {
       paketSkpdSet.putIfAbsent(nama, () => {}).add(skpd);
 
       // For 6
-      final keyword = nama.length > 50 ? nama.substring(0, 50) : nama;
       skpdKeywordCount.putIfAbsent(skpd, () => {})[keyword] = 
           (skpdKeywordCount[skpd]![keyword] ?? 0) + 1;
+
+      // For 7
+      skpdKeywordGroups
+          .putIfAbsent(skpd, () => {})
+          .putIfAbsent(keyword, () => [])
+          .add(paket);
     }
 
     // Second pass to evaluate anomalies
@@ -47,28 +59,28 @@ class AnalisisService {
       }
 
       // 1. Penunjukan Langsung Bernilai Besar
-      if (paket.metodePengadaan.trim().toLowerCase() == 'penunjukan langsung' &&
-          paket.totalNilai > 500000000) {
+      final metodeLower = paket.metodePengadaan.trim().toLowerCase();
+      if (metodeLower == 'penunjukan langsung' && paket.totalNilai > batasPenunjukan) {
         int tingkat = 1; // default waspada
-        if (paket.totalNilai > 10000000000) {
-          tingkat = 3; // kritis
-        } else if (paket.totalNilai > 1000000000) {
+        if (paket.totalNilai > batasPenunjukan * 20) {
+          tingkat = 3; // kritis / perlu perhatian segera
+        } else if (paket.totalNilai > batasPenunjukan * 2) {
           tingkat = 2; // tinggi
         }
         updateTingkat(tingkat);
-        catatans.add("Ditunjuk langsung tanpa lelang padahal nilainya di atas Rp500 juta");
+        catatans.add("Ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(batasPenunjukan)}");
       }
 
       // 2. Paket Mendekati Batas Pengadaan Langsung
-      if (paket.metodePengadaan.trim().toLowerCase() == 'pengadaan langsung' &&
-          paket.totalNilai >= 150000000 &&
-          paket.totalNilai <= 200000000) {
+      if (metodeLower == 'pengadaan langsung' &&
+          paket.totalNilai >= (batasPL * 0.75) &&
+          paket.totalNilai <= batasPL) {
         int tingkat = 1;
-        if (paket.totalNilai >= 190000000) {
+        if (paket.totalNilai >= (batasPL * 0.95)) {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Nilai paket mendekati batas atas Pengadaan Langsung (Rp200 juta). Perlu dicek apakah seharusnya dilelang.");
+        catatans.add("Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(batasPL)}). Perlu dicek apakah seharusnya dilelang.");
       }
 
       // 3. Nama Paket Berulang dalam Satu Satuan Kerja
@@ -117,6 +129,23 @@ class AnalisisService {
         catatans.add("Terdapat $countKeyword paket dengan nama serupa di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-cepah.");
       }
 
+      // 7. Pola Pecah Paket Menghindari Tender (Advanced Rule)
+      final groupList = skpdKeywordGroups[skpd]?[keyword] ?? [];
+      final nonTenderList = groupList.where((p) {
+        final m = p.metodePengadaan.trim().toLowerCase();
+        return m == 'pengadaan langsung' || m == 'penunjukan langsung';
+      }).toList();
+
+      double totalAkumulasi = 0.0;
+      for (final p in nonTenderList) {
+        totalAkumulasi += p.totalNilai;
+      }
+
+      if (nonTenderList.length > 1 && totalAkumulasi > batasPL && nonTenderList.contains(paket)) {
+        updateTingkat(3); // Perlu Perhatian Segera
+        catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena nama paket serupa dan total akumulasi nilainya (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}).");
+      }
+
       // Save results to paket object
       paket.tingkatKejanggalan = maxTingkat;
       paket.catatanKejanggalan = catatans;
@@ -135,8 +164,8 @@ class AnalisisService {
     int totalWaspada = 0;
     int totalNormal = 0;
 
-    int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0;
-    double v1 = 0, v2 = 0, v3 = 0, v4 = 0, v5 = 0, v6 = 0;
+    int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0;
+    double v1 = 0, v2 = 0, v3 = 0, v4 = 0, v5 = 0, v6 = 0, v7 = 0;
 
     for (final p in list) {
       totalAnggaran += p.totalNilai;
@@ -177,6 +206,9 @@ class AnalisisService {
         } else if (catatan.startsWith("Terdapat") && catatan.contains("serupa")) {
           c6++;
           v6 += p.totalNilai;
+        } else if (catatan.startsWith("Terindikasi pemecahan paket")) {
+          c7++;
+          v7 += p.totalNilai;
         }
       }
     }
@@ -184,14 +216,17 @@ class AnalisisService {
     final rincian = {
       'Penunjukan Langsung Nilai Besar': RingkasanKejanggalan(
         namaKategori: 'Penunjukan Langsung Nilai Besar',
-        penjelasan: 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas Rp500 juta.',
+        penjelasan: 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas batas regulasi.',
+        focusedPenjelasan: (double limit) => 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(limit)}.',
         jumlahTemuan: c1,
         totalNilaiTerdampak: v1,
         tingkatRisiko: 3,
       ),
       'Mendekati Batas Pengadaan Langsung': RingkasanKejanggalan(
         namaKategori: 'Mendekati Batas Pengadaan Langsung',
-        penjelasan: 'Nilai paket mendekati batas atas Pengadaan Langsung (Rp200 juta). Perlu dicek apakah seharusnya dilelang.',
+        penjelasan: 'Nilai paket mendekati batas atas Pengadaan Langsung. Perlu dicek apakah seharusnya dilelang.',
+        focusedPenjelasan: (double limit) => 'Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(limit)}). Perlu dicek apakah seharusnya dilelang.',
+        focusedLimit: true,
         jumlahTemuan: c2,
         totalNilaiTerdampak: v2,
         tingkatRisiko: 3,
@@ -220,8 +255,18 @@ class AnalisisService {
       'Pola Paket Serupa di SKPD': RingkasanKejanggalan(
         namaKategori: 'Pola Paket Serupa di SKPD',
         penjelasan: 'Ditemukan banyak paket dengan nama mirip di satu Satuan Kerja yang sama. Indikasi pemecahan pekerjaan.',
+        focusedLimit: false,
         jumlahTemuan: c6,
         totalNilaiTerdampak: v6,
+        tingkatRisiko: 3,
+      ),
+      'Indikasi Pecah Paket Pekerjaan': RingkasanKejanggalan(
+        namaKategori: 'Indikasi Pecah Paket Pekerjaan',
+        penjelasan: 'Pengelompokan paket pekerjaan sejenis bernilai kecil untuk menghindari lelang umum.',
+        focusedPenjelasan: (double limit) => 'Pengelompokan paket pekerjaan sejenis bernilai kecil untuk menghindari lelang umum (akumulasi melebihi ${formatRupiah(limit)}).',
+        focusedLimit: true,
+        jumlahTemuan: c7,
+        totalNilaiTerdampak: v7,
         tingkatRisiko: 3,
       ),
     };

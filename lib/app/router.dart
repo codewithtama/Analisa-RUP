@@ -5,6 +5,7 @@ import '../presentation/ringkasan/ringkasan_screen.dart';
 import '../presentation/daftar_paket/daftar_paket_screen.dart';
 import '../presentation/detail_kejanggalan/detail_screen.dart';
 import '../presentation/detail_kejanggalan/profil_skpd_screen.dart';
+import '../presentation/pengaturan/pengaturan_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -38,6 +39,10 @@ final GoRouter appRouter = GoRouter(
         final skpd = state.pathParameters['skpd'] ?? '';
         return ProfilSkpdScreen(namaSkpd: skpd);
       },
+    ),
+    GoRoute(
+      path: '/pengaturan',
+      builder: (context, state) => const PengaturanScreen(),
     ),
   ],
 );
