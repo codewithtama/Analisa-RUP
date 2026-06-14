@@ -93,7 +93,7 @@ class DetailProvider with ChangeNotifier {
     if (filteredPakets.isEmpty) return;
 
     final StringBuffer buffer = StringBuffer();
-    buffer.writeln("=== LAPORAN KEJANGGALAN ANGGARAN DAERAH ===");
+    buffer.writeln("=== LAPORAN KEJANGGALAN ANGGARAN PENGADAAN K/L/PD ===");
     buffer.writeln("Kategori: $kategori");
     buffer.writeln("Penjelasan: $penjelasanKategori");
     buffer.writeln("Jumlah Temuan: ${filteredPakets.length} paket");

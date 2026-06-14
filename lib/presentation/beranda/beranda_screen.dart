@@ -44,7 +44,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "Aplikasi ini dirancang khusus bagi aktivis dan masyarakat umum untuk mengawal transparansi anggaran Rencana Umum Pengadaan (RUP) daerah secara mandiri dan offline.",
+              "Aplikasi ini dirancang khusus bagi aktivis dan masyarakat umum untuk mengawal transparansi anggaran Rencana Umum Pengadaan (RUP) tingkat Kementerian, Lembaga, dan Pemerintah Daerah (K/L/PD) Republik Indonesia secara mandiri dan offline.",
               style: TextStyle(fontSize: 13, height: 1.4),
               textAlign: TextAlign.center,
             ),
@@ -70,8 +70,71 @@ class _BerandaScreenState extends State<BerandaScreen> {
         ),
         actionsPadding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
         actions: [
-          ElevatedButton(
-            child: const Text("Lanjutkan"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.favorite_rounded, color: warnaKritis, size: 18),
+                label: const Text("Donasi", style: TextStyle(color: warnaKritis)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: warnaKritis),
+                ),
+                onPressed: () {
+                  _tampilkanDonasiDialog();
+                },
+              ),
+              ElevatedButton(
+                child: const Text("Lanjutkan"),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _tampilkanDonasiDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          "Donasi Dukungan",
+          style: TextStyle(color: warnaPrimer, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Pindai QR Code di bawah menggunakan aplikasi e-wallet Anda (DANA, OVO, GoPay, LinkAja, dll) untuk memberikan dukungan donasi.",
+              style: TextStyle(fontSize: 12, height: 1.4),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                "assets/DonasiDANA/WhatsApp Image 2026-06-14 at 18.34.53.jpeg",
+                height: 250,
+                width: 250,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "Terima kasih atas kontribusi Anda!",
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: warnaAksen),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Tutup"),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -128,7 +191,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
               children: [
                 // Welcome and introduction
                 const Text(
-                  "Status Pengadaan Daerah",
+                  "Status Pengadaan Nasional (K/L/PD)",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
