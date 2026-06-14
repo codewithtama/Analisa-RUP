@@ -9,27 +9,14 @@ import '../../utils/format_rupiah.dart';
 import '../widgets/kartu_kejanggalan.dart';
 import '../widgets/skeleton_loader.dart';
 
-class RingkasanScreen extends StatefulWidget {
+class RingkasanScreen extends StatelessWidget {
   const RingkasanScreen({super.key});
 
   @override
-  State<RingkasanScreen> createState() => _RingkasanScreenState();
-}
-
-class _RingkasanScreenState extends State<RingkasanScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final paketList = Provider.of<BerandaProvider>(context, listen: false).paketList;
-      Provider.of<RingkasanProvider>(context, listen: false).hitungStatistik(paketList);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final paketList = Provider.of<BerandaProvider>(context, listen: false).paketList;
     return ChangeNotifierProvider<RingkasanProvider>(
-      create: (context) => RingkasanProvider(),
+      create: (context) => RingkasanProvider()..hitungStatistik(paketList),
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Ringkasan Analisis"),

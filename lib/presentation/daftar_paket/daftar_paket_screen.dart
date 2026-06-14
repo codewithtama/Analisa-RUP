@@ -17,15 +17,6 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final list = Provider.of<BerandaProvider>(context, listen: false).paketList;
-      Provider.of<DaftarPaketProvider>(context, listen: false).inisialisasi(list);
-    });
-  }
-
-  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -33,8 +24,9 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final list = Provider.of<BerandaProvider>(context, listen: false).paketList;
     return ChangeNotifierProvider<DaftarPaketProvider>(
-      create: (context) => DaftarPaketProvider(),
+      create: (context) => DaftarPaketProvider()..inisialisasi(list),
       builder: (context, child) {
         return Scaffold(
           appBar: AppBar(

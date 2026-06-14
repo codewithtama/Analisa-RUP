@@ -6,29 +6,16 @@ import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
 import '../widgets/chip_risiko.dart';
 
-class DetailScreen extends StatefulWidget {
+class DetailScreen extends StatelessWidget {
   final String kategori;
 
   const DetailScreen({super.key, required this.kategori});
 
   @override
-  State<DetailScreen> createState() => _DetailScreenState();
-}
-
-class _DetailScreenState extends State<DetailScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final list = Provider.of<BerandaProvider>(context, listen: false).paketList;
-      Provider.of<DetailProvider>(context, listen: false).inisialisasi(widget.kategori, list);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final list = Provider.of<BerandaProvider>(context, listen: false).paketList;
     return ChangeNotifierProvider<DetailProvider>(
-      create: (context) => DetailProvider(),
+      create: (context) => DetailProvider()..inisialisasi(kategori, list),
       builder: (context, child) {
         return Scaffold(
           appBar: AppBar(
@@ -41,7 +28,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     tooltip: "Bagikan Laporan",
                     onPressed: provider.filteredPakets.isEmpty
                         ? null
-                        : () => provider.bagikanLaporan(widget.kategori),
+                        : () => provider.bagikanLaporan(kategori),
                   );
                 },
               ),
@@ -96,7 +83,7 @@ class _DetailScreenState extends State<DetailScreen> {
             builder: (context, provider, child) {
               if (provider.filteredPakets.isEmpty) return const SizedBox.shrink();
               return FloatingActionButton.extended(
-                onPressed: () => provider.bagikanLaporan(widget.kategori),
+                onPressed: () => provider.bagikanLaporan(kategori),
                 backgroundColor: warnaPrimer,
                 foregroundColor: Colors.white,
                 icon: const Icon(Icons.share_rounded),
@@ -124,7 +111,7 @@ class _DetailScreenState extends State<DetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.kategori,
+              kategori,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -172,17 +159,17 @@ class _DetailScreenState extends State<DetailScreen> {
     // Extract specific warning for this category
     String warningNote = "";
     for (final note in paket.catatanKejanggalan) {
-      if (widget.kategori == 'Penunjukan Langsung Nilai Besar' && note.startsWith("Ditunjuk langsung")) {
+      if (kategori == 'Penunjukan Langsung Nilai Besar' && note.startsWith("Ditunjuk langsung")) {
         warningNote = note;
-      } else if (widget.kategori == 'Mendekati Batas Pengadaan Langsung' && note.startsWith("Nilai paket mendekati batas atas")) {
+      } else if (kategori == 'Mendekati Batas Pengadaan Langsung' && note.startsWith("Nilai paket mendekati batas atas")) {
         warningNote = note;
-      } else if (widget.kategori == 'Nama Paket Berulang di SKPD' && note.startsWith("Nama paket ini muncul")) {
+      } else if (kategori == 'Nama Paket Berulang di SKPD' && note.startsWith("Nama paket ini muncul")) {
         warningNote = note;
-      } else if (widget.kategori == 'Nama Paket Berulang Lintas SKPD' && note.startsWith("Paket dengan nama ini ditemukan")) {
+      } else if (kategori == 'Nama Paket Berulang Lintas SKPD' && note.startsWith("Paket dengan nama ini ditemukan")) {
         warningNote = note;
-      } else if (widget.kategori == 'Nilai Paket Sangat Kecil' && note.startsWith("Nilai paket sangat kecil")) {
+      } else if (kategori == 'Nilai Paket Sangat Kecil' && note.startsWith("Nilai paket sangat kecil")) {
         warningNote = note;
-      } else if (widget.kategori == 'Pola Paket Serupa di SKPD' && note.startsWith("Terdapat") && note.contains("serupa")) {
+      } else if (kategori == 'Pola Paket Serupa di SKPD' && note.startsWith("Terdapat") && note.contains("serupa")) {
         warningNote = note;
       }
     }
