@@ -5,6 +5,7 @@ import '../beranda/beranda_provider.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
 import '../widgets/chip_risiko.dart';
+import '../widgets/dialog_detail_paket.dart';
 
 class DetailScreen extends StatelessWidget {
   final String kategori;
@@ -70,7 +71,7 @@ class DetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             itemBuilder: (context, index) {
                               final paket = list[index];
-                              return _buildPaketCard(paket);
+                              return _buildPaketCard(context, paket);
                             },
                           ),
                   ),
@@ -155,7 +156,7 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaketCard(paket) {
+  Widget _buildPaketCard(BuildContext context, dynamic paket) {
     // Extract specific warning for this category
     String warningNote = "";
     for (final note in paket.catatanKejanggalan) {
@@ -180,76 +181,80 @@ class DetailScreen extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    paket.namaPaket,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: warnaPrimer,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ChipRisiko(tingkat: paket.tingkatKejanggalan),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "SKPD: ${paket.namaSatuanKerja}",
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Metode: ${paket.metodePengadaan}",
-                  style: const TextStyle(fontSize: 11, color: Colors.black38),
-                ),
-                Text(
-                  formatRupiah(paket.totalNilai),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: warnaAksen,
-                  ),
-                ),
-              ],
-            ),
-            if (warningNote.isNotEmpty) ...[
-              const Divider(height: 16, thickness: 0.5),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => DialogDetailPaket.tampilkan(context, paket),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning_amber_rounded, size: 16, color: warnaKritis),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      warningNote,
+                      paket.namaPaket,
                       style: const TextStyle(
-                        fontSize: 12,
-                        color: warnaKritis,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: warnaPrimer,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ChipRisiko(tingkat: paket.tingkatKejanggalan),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "SKPD: ${paket.namaSatuanKerja}",
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Metode: ${paket.metodePengadaan}",
+                    style: const TextStyle(fontSize: 11, color: Colors.black38),
+                  ),
+                  Text(
+                    formatRupiah(paket.totalNilai),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: warnaAksen,
                     ),
                   ),
                 ],
               ),
+              if (warningNote.isNotEmpty) ...[
+                const Divider(height: 16, thickness: 0.5),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, size: 16, color: warnaKritis),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        warningNote,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: warnaKritis,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

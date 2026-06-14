@@ -5,6 +5,7 @@ import '../beranda/beranda_provider.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
 import '../widgets/chip_risiko.dart';
+import '../widgets/dialog_detail_paket.dart';
 
 class ProfilSkpdScreen extends StatelessWidget {
   final String namaSkpd;
@@ -79,7 +80,7 @@ class ProfilSkpdScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(bottom: 16),
                             itemBuilder: (context, index) {
                               final paket = list[index];
-                              return _buildPaketCard(paket);
+                              return _buildPaketCard(context, paket);
                             },
                           ),
                   ),
@@ -241,72 +242,76 @@ class ProfilSkpdScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaketCard(paket) {
+  Widget _buildPaketCard(BuildContext context, dynamic paket) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    paket.namaPaket,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => DialogDetailPaket.tampilkan(context, paket),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      paket.namaPaket,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: warnaPrimer,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ChipRisiko(tingkat: paket.tingkatKejanggalan),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Metode: ${paket.metodePengadaan}",
+                    style: const TextStyle(fontSize: 11, color: Colors.black38),
+                  ),
+                  Text(
+                    formatRupiah(paket.totalNilai),
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: warnaPrimer,
+                      fontWeight: FontWeight.w800,
+                      color: warnaAksen,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(width: 8),
-                ChipRisiko(tingkat: paket.tingkatKejanggalan),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Metode: ${paket.metodePengadaan}",
-                  style: const TextStyle(fontSize: 11, color: Colors.black38),
-                ),
-                Text(
-                  formatRupiah(paket.totalNilai),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: warnaAksen,
-                  ),
-                ),
-              ],
-            ),
-            if (paket.catatanKejanggalan.isNotEmpty) ...[
-              const Divider(height: 16, thickness: 0.5),
-              ...paket.catatanKejanggalan.map((c) => Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.warning_amber_rounded, size: 14, color: warnaKritis),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            c,
-                            style: const TextStyle(fontSize: 11, color: warnaKritis, height: 1.3),
+                ],
+              ),
+              if (paket.catatanKejanggalan.isNotEmpty) ...[
+                const Divider(height: 16, thickness: 0.5),
+                ...paket.catatanKejanggalan.map((c) => Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, size: 14, color: warnaKritis),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              c,
+                              style: const TextStyle(fontSize: 11, color: warnaKritis, height: 1.3),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  )),
+                        ],
+                      ),
+                    )),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
