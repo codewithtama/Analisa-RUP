@@ -66,30 +66,28 @@ class _BerandaScreenState extends State<BerandaScreen> {
               ),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.favorite_rounded, color: warnaKritis, size: 18),
+                  label: const Text("Donasi", style: TextStyle(color: warnaKritis)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: warnaKritis),
+                  ),
+                  onPressed: () {
+                    _tampilkanDonasiDialog();
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text("Lanjutkan"),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
           ],
         ),
-        actionsPadding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-        actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              OutlinedButton.icon(
-                icon: const Icon(Icons.favorite_rounded, color: warnaKritis, size: 18),
-                label: const Text("Donasi", style: TextStyle(color: warnaKritis)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: warnaKritis),
-                ),
-                onPressed: () {
-                  _tampilkanDonasiDialog();
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Lanjutkan"),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

@@ -129,27 +129,65 @@ class ImporScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
-          children: presets.map((preset) => ActionChip(
-            label: Text(preset["name"]!),
-            avatar: const Icon(Icons.table_chart, size: 16, color: warnaAksen),
-            backgroundColor: warnaAksen.withValues(alpha: 0.05),
-            side: BorderSide(color: warnaAksen.withValues(alpha: 0.3)),
-            onPressed: () {
-              provider.muatDariPreset(
-                context: context,
-                assetPath: preset["path"]!,
-                forceOverwrite: false,
-                currentPaketList: berandaProvider.paketList,
-                onImportCompleted: (newList) {
-                  berandaProvider.updatePaketList(newList);
-                },
-              );
-            },
-          )).toList(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<Map<String, String>>(
+              isExpanded: true,
+              value: null, // Always show hint after selection imports
+              hint: const Row(
+                children: [
+                  Icon(Icons.folder_shared_rounded, color: warnaAksen, size: 22),
+                  SizedBox(width: 12),
+                  Text("Pilih Arsip Instansi...", style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+              icon: const Icon(Icons.arrow_drop_down_circle_outlined, color: warnaAksen),
+              items: presets.map((preset) {
+                return DropdownMenuItem<Map<String, String>>(
+                  value: preset,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.description_outlined, color: warnaPrimer, size: 18),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          preset["name"]!,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (selected) {
+                if (selected != null) {
+                  provider.muatDariPreset(
+                    context: context,
+                    assetPath: selected["path"]!,
+                    forceOverwrite: false,
+                    currentPaketList: berandaProvider.paketList,
+                    onImportCompleted: (newList) {
+                      berandaProvider.updatePaketList(newList);
+                    },
+                  );
+                }
+              },
+            ),
+          ),
         ),
       ],
     );
