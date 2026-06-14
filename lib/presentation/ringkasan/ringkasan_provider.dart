@@ -138,9 +138,9 @@ class RingkasanProvider with ChangeNotifier {
       final metode = '"${p.metodePengadaan.replaceAll('"', '""')}"';
       final pagu = p.totalNilai;
       
-      String tingkat = "Waspada";
+      String tingkat = "Pantau";
       if (p.tingkatKejanggalan == 2) {
-        tingkat = "Tinggi";
+        tingkat = "Perlu Diperiksa";
       } else if (p.tingkatKejanggalan == 3) {
         tingkat = "Perlu Perhatian Segera";
       }

@@ -282,14 +282,14 @@ class PdfExportService {
             crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
               pw.Text(
-                "RINCIAN TEMUAN KRITIS (TOP 50)",
+                "RINCIAN TEMUAN PERLU PERHATIAN SEGERA (TOP 50)",
                 style: pw.TextStyle(font: headerFont, fontSize: 16, color: primaryColor),
               ),
               pw.SizedBox(height: 4),
               pw.Container(height: 2, color: primaryColor),
               pw.SizedBox(height: 12),
               pw.Text(
-                "Daftar paket pengadaan dengan tingkat risiko tertinggi (Perlu Perhatian Segera / Kritis = 3) berdasarkan nilai pagu terbesar:",
+                "Daftar paket pengadaan dengan tingkat risiko tertinggi (Perlu Perhatian Segera = 3) berdasarkan nilai pagu terbesar:",
                 style: pw.TextStyle(font: bodyFont, fontSize: 9, color: PdfColors.black),
               ),
               pw.SizedBox(height: 12),
@@ -321,7 +321,7 @@ class PdfExportService {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(12),
                           child: pw.Text(
-                            "Tidak ada temuan kejanggalan tingkat kritis.",
+                            "Tidak ada temuan kejanggalan tingkat perlu perhatian segera.",
                             style: pw.TextStyle(font: bodyFont, fontSize: 10),
                             textAlign: pw.TextAlign.center,
                           ),

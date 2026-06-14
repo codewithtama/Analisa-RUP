@@ -659,9 +659,9 @@ class RingkasanScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildLegendItem("Kritis", warnaKritis),
-                _buildLegendItem("Tinggi", warnaTinggi),
-                _buildLegendItem("Waspada", warnaWaspada),
+                _buildLegendItem("Perlu Perhatian Segera", warnaKritis),
+                _buildLegendItem("Perlu Diperiksa", warnaTinggi),
+                _buildLegendItem("Pantau", warnaWaspada),
                 _buildLegendItem("Wajar", warnaNormal),
               ],
             ),

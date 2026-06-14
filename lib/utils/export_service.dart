@@ -35,7 +35,7 @@ List<int>? _buildExcelBytes(List<Map<String, dynamic>> rawData) {
     String tingkatStr = "Wajar";
     if (tingkatKejanggalan == 1) tingkatStr = "Pantau";
     if (tingkatKejanggalan == 2) tingkatStr = "Perlu Diperiksa";
-    if (tingkatKejanggalan == 3) tingkatStr = "Kritis";
+    if (tingkatKejanggalan == 3) tingkatStr = "Perlu Perhatian Segera";
 
     String catatanStr = (p['catatanKejanggalan'] as List<dynamic>?)?.join("; ") ?? "";
 
