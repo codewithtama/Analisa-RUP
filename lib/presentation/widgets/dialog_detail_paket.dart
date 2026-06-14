@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 import '../../data/models/paket_pengadaan.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
+import '../../utils/fuzzy_match.dart';
+import '../beranda/beranda_provider.dart';
 import 'chip_risiko.dart';
 
-class DialogDetailPaket extends StatelessWidget {
+class DialogDetailPaket extends StatefulWidget {
   final PaketPengadaan paket;
 
   const DialogDetailPaket({super.key, required this.paket});
@@ -22,15 +25,23 @@ class DialogDetailPaket extends StatelessWidget {
     );
   }
 
-  Future<void> _bukaTautanSirup(BuildContext context) async {
-    if (paket.kodeRup.trim().isEmpty) return;
+  @override
+  State<DialogDetailPaket> createState() => _DialogDetailPaketState();
+}
 
-    final isSwakelola = paket.caraPengadaan.toLowerCase().contains('swakelola');
+class _DialogDetailPaketState extends State<DialogDetailPaket> {
+  int _currentPage = 1;
+  static const int _itemsPerPage = 5;
+
+  Future<void> _bukaTautanSirup(BuildContext context) async {
+    if (widget.paket.kodeRup.trim().isEmpty) return;
+
+    final isSwakelola = widget.paket.caraPengadaan.toLowerCase().contains('swakelola');
     final String tipeSumber = isSwakelola ? "Swakelola" : "Penyedia";
-    final String tahun = paket.tahunAnggaran.trim().isNotEmpty
-        ? paket.tahunAnggaran.trim()
+    final String tahun = widget.paket.tahunAnggaran.trim().isNotEmpty
+        ? widget.paket.tahunAnggaran.trim()
         : "2026";
-    final String kodeRup = paket.kodeRup.trim();
+    final String kodeRup = widget.paket.kodeRup.trim();
 
     final String url =
         "https://data.inaproc.id/rup?tahun=$tahun&offset=0&limit=20&search_rup=$kodeRup&kode=$kodeRup&detail_sumber=$tipeSumber&sumber=$tipeSumber";
@@ -89,7 +100,7 @@ class DialogDetailPaket extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ChipRisiko(tingkat: paket.tingkatKejanggalan),
+                  ChipRisiko(tingkat: widget.paket.tingkatKejanggalan),
                 ],
               ),
               const Divider(height: 24, thickness: 0.5),
@@ -98,7 +109,7 @@ class DialogDetailPaket extends StatelessWidget {
               const Text("Nama Pekerjaan", style: TextStyle(fontSize: 11, color: Colors.black38)),
               const SizedBox(height: 4),
               Text(
-                paket.namaPaket,
+                widget.paket.namaPaket,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -112,7 +123,7 @@ class DialogDetailPaket extends StatelessWidget {
               const Text("Pagu Anggaran", style: TextStyle(fontSize: 11, color: Colors.black38)),
               const SizedBox(height: 4),
               Text(
-                formatRupiah(paket.totalNilai),
+                formatRupiah(widget.paket.totalNilai),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -123,20 +134,20 @@ class DialogDetailPaket extends StatelessWidget {
 
               // Metadata Grid
               _buildGridDetail([
-                _DetailItem("Kode RUP", paket.kodeRup.isEmpty ? "-" : paket.kodeRup),
-                _DetailItem("Tahun Anggaran", paket.tahunAnggaran.isEmpty ? "-" : paket.tahunAnggaran),
-                _DetailItem("Instansi", paket.namaInstansi.isEmpty ? "-" : paket.namaInstansi),
-                _DetailItem("Satuan Kerja (SKPD)", paket.namaSatuanKerja.isEmpty ? "-" : paket.namaSatuanKerja),
-                _DetailItem("Cara Pengadaan", paket.caraPengadaan.isEmpty ? "-" : paket.caraPengadaan),
-                _DetailItem("Metode Pengadaan", paket.metodePengadaan.isEmpty ? "-" : paket.metodePengadaan),
-                _DetailItem("Jenis Pengadaan", paket.jenisPengadaan.isEmpty ? "-" : paket.jenisPengadaan),
-                _DetailItem("Sumber Dana", paket.sumberDana.isEmpty ? "-" : _jelaskanSumberDana(paket.sumberDana)),
+                _DetailItem("Kode RUP", widget.paket.kodeRup.isEmpty ? "-" : widget.paket.kodeRup),
+                _DetailItem("Tahun Anggaran", widget.paket.tahunAnggaran.isEmpty ? "-" : widget.paket.tahunAnggaran),
+                _DetailItem("Instansi", widget.paket.namaInstansi.isEmpty ? "-" : widget.paket.namaInstansi),
+                _DetailItem("Satuan Kerja (SKPD)", widget.paket.namaSatuanKerja.isEmpty ? "-" : widget.paket.namaSatuanKerja),
+                _DetailItem("Cara Pengadaan", widget.paket.caraPengadaan.isEmpty ? "-" : widget.paket.caraPengadaan),
+                _DetailItem("Metode Pengadaan", widget.paket.metodePengadaan.isEmpty ? "-" : widget.paket.metodePengadaan),
+                _DetailItem("Jenis Pengadaan", widget.paket.jenisPengadaan.isEmpty ? "-" : widget.paket.jenisPengadaan),
+                _DetailItem("Sumber Dana", widget.paket.sumberDana.isEmpty ? "-" : _jelaskanSumberDana(widget.paket.sumberDana)),
               ]),
 
               const SizedBox(height: 16),
 
               // Catatan Kejanggalan (If Any)
-              if (paket.catatanKejanggalan.isNotEmpty) ...[
+              if (widget.paket.catatanKejanggalan.isNotEmpty) ...[
                 const Text("Temuan Analisis Risiko", style: TextStyle(fontSize: 11, color: Colors.black38)),
                 const SizedBox(height: 8),
                 Container(
@@ -148,7 +159,7 @@ class DialogDetailPaket extends StatelessWidget {
                     border: Border.all(color: warnaKritis.withValues(alpha: 0.15)),
                   ),
                   child: Column(
-                    children: paket.catatanKejanggalan.map((c) {
+                    children: widget.paket.catatanKejanggalan.map((c) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 6.0),
                         child: Row(
@@ -176,6 +187,10 @@ class DialogDetailPaket extends StatelessWidget {
                 const SizedBox(height: 24),
               ],
 
+              // Paket Serupa List (If Any)
+              _buildPaketSerupaSection(context),
+              const SizedBox(height: 24),
+
               // Actions
               Row(
                 children: [
@@ -185,7 +200,7 @@ class DialogDetailPaket extends StatelessWidget {
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  if (paket.kodeRup.trim().isNotEmpty) ...[
+                  if (widget.paket.kodeRup.trim().isNotEmpty) ...[
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
@@ -201,6 +216,204 @@ class DialogDetailPaket extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  List<PaketPengadaan> _findPaketSerupa(BuildContext context) {
+    try {
+      final allPaket = Provider.of<BerandaProvider>(context, listen: false).paketList;
+      final skpd = widget.paket.namaSatuanKerja.trim();
+      final nama = widget.paket.namaPaket.trim().toLowerCase();
+
+      return allPaket.where((p) {
+        if (p.namaSatuanKerja.trim() != skpd || p == widget.paket) {
+          return false;
+        }
+        final otherNama = p.namaPaket.trim().toLowerCase();
+        return otherNama == nama || FuzzyMatch.jaroWinkler(otherNama, nama) >= 0.85;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Widget _buildPaketSerupaSection(BuildContext context) {
+    final paketSerupa = _findPaketSerupa(context);
+    if (paketSerupa.isEmpty) return const SizedBox.shrink();
+
+    final totalPages = (paketSerupa.length / _itemsPerPage).ceil();
+    // In case the list changes or pages get out of sync, clamp it safely
+    final currentPage = _currentPage.clamp(1, totalPages);
+    
+    final paginatedList = paketSerupa
+        .skip((currentPage - 1) * _itemsPerPage)
+        .take(_itemsPerPage)
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Paket Serupa/Sama di Satuan Kerja Ini",
+          style: TextStyle(fontSize: 11, color: Colors.black38),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.layers_outlined, size: 18, color: warnaAksen),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Ditemukan ${paketSerupa.length} paket serupa (Nama mirip >= 85% atau identik)",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: warnaPrimer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, thickness: 0.5),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: paginatedList.length,
+                separatorBuilder: (context, index) => const Divider(height: 1, thickness: 0.5),
+                itemBuilder: (context, index) {
+                  final item = paginatedList[index];
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context); // Close current modal
+                      Future.delayed(const Duration(milliseconds: 150), () {
+                        if (context.mounted) {
+                          DialogDetailPaket.tampilkan(context, item);
+                        }
+                      });
+                    },
+                    borderRadius: (index == paginatedList.length - 1 && totalPages <= 1)
+                        ? const BorderRadius.vertical(bottom: Radius.circular(12))
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.namaPaket,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: warnaPrimer,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Text(
+                                      formatRupiah(item.totalNilai),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: warnaAksen,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "•  ${item.metodePengadaan}",
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.black45,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            size: 20,
+                            color: Colors.black26,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              if (totalPages > 1) ...[
+                const Divider(height: 1, thickness: 0.5),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: warnaPrimer,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        ),
+                        onPressed: currentPage > 1
+                            ? () {
+                                setState(() {
+                                  _currentPage = currentPage - 1;
+                                });
+                              }
+                            : null,
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 12),
+                        label: const Text("Sebelumnya", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                      Text(
+                        "Halaman $currentPage dari $totalPages",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: warnaPrimer,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        ),
+                        onPressed: currentPage < totalPages
+                            ? () {
+                                setState(() {
+                                  _currentPage = currentPage + 1;
+                                });
+                              }
+                            : null,
+                        icon: const Text("Berikutnya", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        label: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -253,7 +466,7 @@ class DialogDetailPaket extends StatelessWidget {
       case 'APBNP':
         return 'APBNP (APBN Perubahan)';
       case 'GABUNGAN_APBN_DAN_APBD':
-      case 'GABUNGAN APBN DAN APBD':
+      case 'GABUNGAN APBN AND APBD':
         return 'Gabungan APBN dan APBD (Patungan Pusat & Daerah)';
       case 'PHLN':
         return 'PHLN (Pinjaman/Hibah Luar Negeri)';

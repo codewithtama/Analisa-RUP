@@ -15,8 +15,8 @@ class AnalisisService {
     // 4. Nama Paket Berulang di Banyak Satuan Kerja: PaketNama -> set of SKPDs
     final Map<String, Set<String>> paketSkpdSet = {};
 
-    // Fuzzy clustering: SKPD -> list of clusters. Each cluster is a list of PaketPengadaan.
-    final Map<String, List<List<PaketPengadaan>>> skpdFuzzyClusters = {};
+    // Fuzzy clustering: SKPD -> LengthBucket -> list of clusters. Each cluster is a list of PaketPengadaan.
+    final Map<String, Map<int, List<List<PaketPengadaan>>>> skpdFuzzyClusters = {};
 
     // First pass to build counts and fuzzy clusters
     for (final paket in list) {
@@ -30,46 +30,57 @@ class AnalisisService {
       // For 4
       paketSkpdSet.putIfAbsent(nama, () => {}).add(skpd);
 
-      // Build fuzzy clusters for this SKPD
-      final clusters = skpdFuzzyClusters.putIfAbsent(skpd, () => []);
+      // Build fuzzy clusters for this SKPD with length bucketing
+      final buckets = skpdFuzzyClusters.putIfAbsent(skpd, () => {});
+      final len = nama.length;
+      final minLen = (len * 0.5).floor();
+      final maxLen = (len * 2.0).ceil();
+
       bool matched = false;
-      for (final cluster in clusters) {
-        final repName = cluster.first.namaPaket.trim().toLowerCase();
-        if (FuzzyMatch.jaroWinkler(repName, nama) >= 0.85) {
-          cluster.add(paket);
-          matched = true;
-          break;
+      for (int l = minLen; l <= maxLen; l++) {
+        final clustersAtLength = buckets[l];
+        if (clustersAtLength == null) continue;
+        for (final cluster in clustersAtLength) {
+          final repName = cluster.first.namaPaket.trim().toLowerCase();
+          if (FuzzyMatch.jaroWinkler(repName, nama) >= 0.85) {
+            cluster.add(paket);
+            matched = true;
+            break;
+          }
         }
+        if (matched) break;
       }
       if (!matched) {
-        clusters.add([paket]);
+        buckets.putIfAbsent(len, () => []).add([paket]);
       }
     }
 
     // Pre-calculate cumulative non-tender value for each fuzzy cluster
     final Map<PaketPengadaan, double> paketClusterTotalVal = {};
     final Map<PaketPengadaan, int> paketClusterSize = {};
-    final Map<PaketPengadaan, List<PaketPengadaan>> paketClusterMembers = {};
+    final Map<PaketPengadaan, int> paketTotalClusterSize = {};
 
-    skpdFuzzyClusters.forEach((skpd, clusters) {
-      for (final cluster in clusters) {
-        // Find non-tender packages in this cluster
-        final nonTenderList = cluster.where((p) {
-          final m = p.metodePengadaan.trim().toLowerCase();
-          return m == 'pengadaan langsung' || m == 'penunjukan langsung';
-        }).toList();
+    skpdFuzzyClusters.forEach((skpd, buckets) {
+      buckets.forEach((len, clusters) {
+        for (final cluster in clusters) {
+          // Find non-tender packages in this cluster
+          final nonTenderList = cluster.where((p) {
+            final m = p.metodePengadaan.trim().toLowerCase();
+            return m == 'pengadaan langsung' || m == 'penunjukan langsung';
+          }).toList();
 
-        double totalAkumulasi = 0.0;
-        for (final p in nonTenderList) {
-          totalAkumulasi += p.totalNilai;
+          double totalAkumulasi = 0.0;
+          for (final p in nonTenderList) {
+            totalAkumulasi += p.totalNilai;
+          }
+
+          for (final p in cluster) {
+            paketClusterTotalVal[p] = totalAkumulasi;
+            paketClusterSize[p] = nonTenderList.length;
+            paketTotalClusterSize[p] = cluster.length;
+          }
         }
-
-        for (final p in cluster) {
-          paketClusterTotalVal[p] = totalAkumulasi;
-          paketClusterSize[p] = nonTenderList.length;
-          paketClusterMembers[p] = nonTenderList;
-        }
-      }
+      });
     });
 
     // Second pass to evaluate anomalies
@@ -148,9 +159,7 @@ class AnalisisService {
       }
 
       // 6. Kata Kunci Paket Berulang Banyak di Satu SKPD
-      final totalClusterSize = skpdFuzzyClusters[skpd]
-          ?.firstWhere((c) => c.contains(paket), orElse: () => [])
-          .length ?? 0;
+      final totalClusterSize = paketTotalClusterSize[paket] ?? 0;
 
       if (totalClusterSize >= 30) {
         int tingkat = 2;
@@ -164,9 +173,9 @@ class AnalisisService {
       // 7. Pola Pecah Paket Menghindari Tender (Advanced Rule)
       final clusterSize = paketClusterSize[paket] ?? 0;
       final totalAkumulasi = paketClusterTotalVal[paket] ?? 0.0;
-      final members = paketClusterMembers[paket] ?? [];
 
-      if (clusterSize > 1 && totalAkumulasi > batasPL && members.contains(paket)) {
+      final isNonTender = metodeLower == 'pengadaan langsung' || metodeLower == 'penunjukan langsung';
+      if (clusterSize > 1 && totalAkumulasi > batasPL && isNonTender) {
         updateTingkat(3); // Perlu Perhatian Segera
         catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena terdeteksi kemiripan nama paket >= 85% dalam satu SKPD, dengan total akumulasi nilai non-tender (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3 tentang Pemberantasan Tindak Pidana Korupsi)");
       }
