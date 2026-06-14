@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../data/hive_service.dart';
 import '../../data/models/paket_pengadaan.dart';
 import '../../data/models/skpd_model.dart';
 
@@ -20,6 +21,8 @@ class SkpdBudgetBreakdown {
 }
 
 class RingkasanProvider with ChangeNotifier {
+  final HiveService _hiveService = HiveService();
+
   List<MapEntry<String, int>> metodeCount = [];
   List<SkpdBudgetBreakdown> topSkpdBudget = [];
   List<MapEntry<String, int>> sumberDanaCount = [];
@@ -27,7 +30,18 @@ class RingkasanProvider with ChangeNotifier {
   List<SkpdModel> skpdLeaderboard = [];
   bool isProcessing = true;
 
-  void hitungStatistik(List<PaketPengadaan> paketList) {
+  double batasPL = 200000000.0;
+  double batasPenunjukan = 500000000.0;
+
+  Future<void> hitungStatistik(List<PaketPengadaan> paketList) async {
+    isProcessing = true;
+    notifyListeners();
+
+    try {
+      batasPL = await _hiveService.getBatasPL();
+      batasPenunjukan = await _hiveService.getBatasPenunjukan();
+    } catch (_) {}
+
     if (paketList.isEmpty) {
       metodeCount = [];
       topSkpdBudget = [];
@@ -38,8 +52,6 @@ class RingkasanProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-
-    isProcessing = true;
 
     final Map<String, int> metCountMap = {};
     final Map<String, double> skpdTotalMap = {};

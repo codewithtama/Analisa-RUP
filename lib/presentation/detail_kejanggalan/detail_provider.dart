@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../data/models/paket_pengadaan.dart';
 import '../../utils/format_rupiah.dart';
@@ -9,7 +10,19 @@ class DetailProvider with ChangeNotifier {
   String penjelasanKategori = "";
 
   void inisialisasi(String kategori, List<PaketPengadaan> paketList) {
-    penjelasanKategori = _getPenjelasanKategori(kategori);
+    double batasPL = 200000000.0;
+    double batasPen = 500000000.0;
+    try {
+      if (Hive.isBoxOpen('pengaturan')) {
+        final box = Hive.box('pengaturan');
+        final plVal = box.get('batas_pl');
+        if (plVal is num) batasPL = plVal.toDouble();
+        final penVal = box.get('batas_penunjukan');
+        if (penVal is num) batasPen = penVal.toDouble();
+      }
+    } catch (_) {}
+
+    penjelasanKategori = _getPenjelasanKategori(kategori, batasPL, batasPen);
 
     filteredPakets = paketList.where((p) {
       for (final catatan in p.catatanKejanggalan) {
@@ -31,6 +44,9 @@ class DetailProvider with ChangeNotifier {
         if (kategori == 'Pola Paket Serupa di SKPD' && catatan.startsWith("Terdapat") && catatan.contains("serupa")) {
           return true;
         }
+        if (kategori == 'Indikasi Pecah Paket Pekerjaan' && catatan.startsWith("Terindikasi pemecahan paket")) {
+          return true;
+        }
       }
       return false;
     }).toList();
@@ -39,12 +55,12 @@ class DetailProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String _getPenjelasanKategori(String kategori) {
+  String _getPenjelasanKategori(String kategori, double batasPL, double batasPen) {
     switch (kategori) {
       case 'Penunjukan Langsung Nilai Besar':
-        return 'Daftar paket pengadaan yang ditunjuk langsung oleh Satuan Kerja tanpa melalui proses lelang/tender umum, padahal nilai anggarannya melebihi batas regulasi Rp500 juta rupiah. Hal ini berpotensi menyalahi aturan lelang publik.';
+        return 'Daftar paket pengadaan yang ditunjuk langsung oleh Satuan Kerja tanpa melalui proses lelang/tender umum, padahal nilai anggarannya melebihi batas regulasi ${formatRupiah(batasPen)}. Hal ini berpotensi menyalahi aturan lelang publik.';
       case 'Mendekati Batas Pengadaan Langsung':
-        return 'Paket-paket pengadaan langsung dengan nilai mendekati batas maksimal regulasi Rp200 juta rupiah. Perlu dilakukan verifikasi independen untuk mengonfirmasi apakah paket sengaja dibuat di bawah batas lelang agar terhindar dari tender terbuka.';
+        return 'Paket-paket pengadaan langsung dengan nilai mendekati batas maksimal regulasi ${formatRupiah(batasPL)}. Perlu dilakukan verifikasi independen untuk mengonfirmasi apakah paket sengaja dibuat di bawah batas lelang agar terhindar dari tender terbuka.';
       case 'Nama Paket Berulang di SKPD':
         return 'Ditemukan nama paket yang identik muncul berulang kali di satu Satuan Kerja (SKPD) yang sama. Kondisi ini sering diasosiasikan dengan pemecahan paket pekerjaan besar secara sengaja demi menghindari lelang terbuka.';
       case 'Nama Paket Berulang Lintas SKPD':
@@ -53,6 +69,8 @@ class DetailProvider with ChangeNotifier {
         return 'Daftar paket pengadaan dengan alokasi anggaran yang sangat tidak wajar atau terlalu kecil (di bawah Rp1 juta rupiah). Kemungkinan besar terdapat kesalahan penulisan data masukan atau anomali input anggaran.';
       case 'Pola Paket Serupa di SKPD':
         return 'Ditemukan kemiripan nama paket (pola karakter 50 kata pertama) yang berulang dalam jumlah tidak wajar di satu Satuan Kerja. Indikasi kuat adanya upaya memecah pekerjaan proyek besar menjadi paket-paket kecil.';
+      case 'Indikasi Pecah Paket Pekerjaan':
+        return 'Daftar paket pekerjaan sejenis yang nilainya dipecah-pecah di bawah batas Pengadaan Langsung (${formatRupiah(batasPL)}), namun total akumulasinya melebihi batas tersebut. Pola ini mengindikasikan taktik pemecahan paket secara sengaja untuk menghindari lelang umum.';
       default:
         return 'Daftar paket pengadaan yang masuk dalam kategori kejanggalan sistem.';
     }

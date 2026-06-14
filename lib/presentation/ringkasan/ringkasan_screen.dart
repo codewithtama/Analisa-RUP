@@ -97,9 +97,17 @@ class RingkasanScreen extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   ...stats.rincianKejanggalan.values.map((ringkasan) {
+                    String penjelasan = ringkasan.penjelasan;
+                    if (ringkasan.focusedPenjelasan != null) {
+                      final isPL = ringkasan.namaKategori.contains('Pengadaan Langsung') || 
+                                   ringkasan.namaKategori.contains('Pecah Paket');
+                      final limit = isPL ? ringkasanProv.batasPL : ringkasanProv.batasPenunjukan;
+                      penjelasan = ringkasan.focusedPenjelasan!(limit);
+                    }
+
                     return KartuKejanggalan(
                       judul: ringkasan.namaKategori,
-                      penjelasan: ringkasan.penjelasan,
+                      penjelasan: penjelasan,
                       jumlahTemuan: ringkasan.jumlahTemuan,
                       totalNilaiTerdampak: ringkasan.totalNilaiTerdampak,
                       tingkatRisiko: ringkasan.tingkatRisiko,

@@ -172,6 +172,8 @@ class DetailScreen extends StatelessWidget {
         warningNote = note;
       } else if (kategori == 'Pola Paket Serupa di SKPD' && note.startsWith("Terdapat") && note.contains("serupa")) {
         warningNote = note;
+      } else if (kategori == 'Indikasi Pecah Paket Pekerjaan' && note.startsWith("Terindikasi pemecahan paket")) {
+        warningNote = note;
       }
     }
 
