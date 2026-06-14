@@ -54,11 +54,31 @@ class RingkasanScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // Pie Chart Card
-                  _buildPieChartCard(ringkasanProv),
+                  // Pie Chart Metode Pengadaan
+                  _buildPieChartCard(
+                    title: "Metode Pengadaan (Berdasarkan Jumlah Paket)",
+                    dataList: ringkasanProv.metodeCount,
+                  ),
 
-                  // Bar Chart Card
+                  // Pie Chart Sumber Dana
+                  _buildPieChartCard(
+                    title: "Sumber Dana (Berdasarkan Jumlah Paket)",
+                    dataList: ringkasanProv.sumberDanaCount,
+                  ),
+
+                  // Pie Chart Jenis Pengadaan
+                  _buildPieChartCard(
+                    title: "Jenis Pengadaan (Berdasarkan Jumlah Paket)",
+                    dataList: ringkasanProv.jenisPengadaanCount,
+                  ),
+
+                  // Bar Chart Top 5 SKPD
                   _buildBarChartCard(ringkasanProv),
+
+                  const SizedBox(height: 24),
+
+                  // Indeks Kerawanan Satuan Kerja (Leaderboard)
+                  _buildLeaderboardSection(context, ringkasanProv),
 
                   const SizedBox(height: 24),
 
@@ -98,21 +118,23 @@ class RingkasanScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPieChartCard(RingkasanProvider provider) {
-    if (provider.metodeCount.isEmpty) return const SizedBox.shrink();
+  Widget _buildPieChartCard({
+    required String title,
+    required List<MapEntry<String, int>> dataList,
+  }) {
+    if (dataList.isEmpty) return const SizedBox.shrink();
 
-    // Limit to top 4 and group others
-    final List<MapEntry<String, int>> displayMethods = [];
+    final List<MapEntry<String, int>> displayData = [];
     int otherCount = 0;
-    for (int i = 0; i < provider.metodeCount.length; i++) {
+    for (int i = 0; i < dataList.length; i++) {
       if (i < 4) {
-        displayMethods.add(provider.metodeCount[i]);
+        displayData.add(dataList[i]);
       } else {
-        otherCount += provider.metodeCount[i].value;
+        otherCount += dataList[i].value;
       }
     }
     if (otherCount > 0) {
-      displayMethods.add(MapEntry("Lainnya", otherCount));
+      displayData.add(MapEntry("Lainnya", otherCount));
     }
 
     final List<Color> colors = [
@@ -121,10 +143,12 @@ class RingkasanScreen extends StatelessWidget {
       warnaNormal,
       warnaWaspada,
       warnaTinggi,
+      Colors.purple,
+      Colors.teal,
       Colors.grey,
     ];
 
-    int total = displayMethods.fold(0, (sum, entry) => sum + entry.value);
+    int total = displayData.fold(0, (sum, entry) => sum + entry.value);
 
     return Card(
       child: Padding(
@@ -132,9 +156,9 @@ class RingkasanScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Metode Pengadaan (Berdasarkan Jumlah Paket)",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
             ),
             const SizedBox(height: 16),
             Row(
@@ -147,8 +171,8 @@ class RingkasanScreen extends StatelessWidget {
                       PieChartData(
                         sectionsSpace: 2,
                         centerSpaceRadius: 24,
-                        sections: List.generate(displayMethods.length, (index) {
-                          final entry = displayMethods[index];
+                        sections: List.generate(displayData.length, (index) {
+                          final entry = displayData[index];
                           final percentage = (entry.value / total) * 100;
                           return PieChartSectionData(
                             color: colors[index % colors.length],
@@ -172,8 +196,8 @@ class RingkasanScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(displayMethods.length, (index) {
-                      final entry = displayMethods[index];
+                    children: List.generate(displayData.length, (index) {
+                      final entry = displayData[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2.0),
                         child: Row(
@@ -230,8 +254,6 @@ class RingkasanScreen extends StatelessWidget {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
             ),
             const SizedBox(height: 20),
-            // Custom high fidelity horizontal bars since vertical bars in fl_chart are hard to read for long titles.
-            // This is clean, visually gorgeous, responsive, and works flawlessly.
             ...List.generate(provider.topSkpdBudget.length, (index) {
               final entry = provider.topSkpdBudget[index];
               final ratio = entry.value / maxBudget;
@@ -299,6 +321,121 @@ class RingkasanScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildLeaderboardSection(BuildContext context, RingkasanProvider provider) {
+    final list = provider.skpdLeaderboard;
+    if (list.isEmpty) return const SizedBox.shrink();
+
+    // Limit display to top 10 on main ringkasan
+    final limit = list.length > 10 ? 10 : list.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Indeks Kerawanan Satuan Kerja",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: warnaPrimer,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Peringkat Satuan Kerja (SKPD) paling rawan kejanggalan anggaran.",
+            style: TextStyle(fontSize: 12, color: Colors.black45),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: limit,
+            separatorBuilder: (context, index) => const Divider(height: 1, thickness: 0.5),
+            itemBuilder: (context, index) {
+              final skpd = list[index];
+              Color scoreColor = warnaNormal;
+              if (skpd.skorKerawanan >= 10.0) {
+                scoreColor = warnaKritis;
+              } else if (skpd.skorKerawanan >= 5.0) {
+                scoreColor = warnaTinggi;
+              } else if (skpd.skorKerawanan >= 1.0) {
+                scoreColor = warnaWaspada;
+              }
+
+              return ListTile(
+                onTap: () {
+                  context.push('/profil-skpd/${skpd.namaSkpd}');
+                },
+                leading: CircleAvatar(
+                  backgroundColor: index == 0
+                      ? warnaKritis
+                      : (index < 3 ? warnaTinggi : warnaPrimer.withValues(alpha: 0.1)),
+                  foregroundColor: index < 3 ? Colors.white : warnaPrimer,
+                  radius: 16,
+                  child: Text(
+                    "${index + 1}",
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(
+                  skpd.namaSkpd,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: warnaPrimer),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Row(
+                  children: [
+                    Text(
+                      "${skpd.totalPaket} paket",
+                      style: const TextStyle(fontSize: 11, color: Colors.black45),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: const BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        formatRupiah(skpd.totalAnggaran),
+                        style: const TextStyle(fontSize: 11, color: Colors.black45),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: scoreColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    "Skor: ${skpd.skorKerawanan.toStringAsFixed(0)}",
+                    style: TextStyle(
+                      color: scoreColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSkeleton() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -309,11 +446,13 @@ class RingkasanScreen extends StatelessWidget {
           const SizedBox(height: 12),
           const SkeletonLoader(width: double.infinity, height: 180),
           const SizedBox(height: 16),
+          const SkeletonLoader(width: double.infinity, height: 180),
+          const SizedBox(height: 16),
           const SkeletonLoader(width: double.infinity, height: 220),
           const SizedBox(height: 24),
           const SkeletonLoader(width: 150, height: 20),
           const SizedBox(height: 12),
-          ...List.generate(3, (index) => const Padding(
+          ...List.generate(2, (index) => const Padding(
             padding: EdgeInsets.only(bottom: 12.0),
             child: SkeletonLoader(width: double.infinity, height: 120),
           )),
