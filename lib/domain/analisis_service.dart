@@ -68,7 +68,7 @@ class AnalisisService {
           tingkat = 2; // tinggi
         }
         updateTingkat(tingkat);
-        catatans.add("Ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(batasPenunjukan)}");
+        catatans.add("Ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(batasPenunjukan)}. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 38 tentang Ketentuan Penunjukan Langsung)");
       }
 
       // 2. Paket Mendekati Batas Pengadaan Langsung
@@ -80,7 +80,7 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(batasPL)}). Perlu dicek apakah seharusnya dilelang.");
+        catatans.add("Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(batasPL)}). Perlu dicek apakah seharusnya dilelang. (Rujukan Perpres No. 12/2021 Pasal 38 Ayat (3))");
       }
 
       // 3. Nama Paket Berulang dalam Satu Satuan Kerja
@@ -93,7 +93,7 @@ class AnalisisService {
           tingkat = 2;
         }
         updateTingkat(tingkat);
-        catatans.add("Nama paket ini muncul $countInSkpd kali di $skpd. Perlu diperiksa apakah ini pemecahan paket yang disengaja.");
+        catatans.add("Nama paket ini muncul $countInSkpd kali di $skpd. Perlu diperiksa apakah ini pemecahan paket yang disengaja. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
       }
 
       // 4. Nama Paket Berulang di Banyak Satuan Kerja
@@ -105,7 +105,7 @@ class AnalisisService {
           tingkat = 2;
         }
         updateTingkat(tingkat);
-        catatans.add("Paket dengan nama ini ditemukan di $countAcrossSkpd satuan kerja sekaligus.");
+        catatans.add("Paket dengan nama ini ditemukan di $countAcrossSkpd satuan kerja sekaligus. (Rujukan Pengawasan Efisiensi Pengadaan sesuai Perpres No. 12/2021 Pasal 6)");
       }
 
       // 5. Nilai Paket Sangat Kecil
@@ -115,7 +115,7 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Nilai paket sangat kecil (${formatRupiah(paket.totalNilai)}). Perlu konfirmasi apakah data sudah benar.");
+        catatans.add("Nilai paket sangat kecil (${formatRupiah(paket.totalNilai)}). Perlu konfirmasi apakah data sudah benar. (Potensi Ketidakefisienan Administrasi Pengadaan sesuai Perpres No. 12/2021 Pasal 6)");
       }
 
       // 6. Kata Kunci Paket Berulang Banyak di Satu SKPD
@@ -126,7 +126,7 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Terdapat $countKeyword paket dengan nama serupa di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-cepah.");
+        catatans.add("Terdapat $countKeyword paket dengan nama serupa di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-cepah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
       }
 
       // 7. Pola Pecah Paket Menghindari Tender (Advanced Rule)
@@ -143,7 +143,7 @@ class AnalisisService {
 
       if (nonTenderList.length > 1 && totalAkumulasi > batasPL && nonTenderList.contains(paket)) {
         updateTingkat(3); // Perlu Perhatian Segera
-        catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena nama paket serupa dan total akumulasi nilainya (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}).");
+        catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena nama paket serupa dan total akumulasi nilainya (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3 tentang Pemberantasan Tindak Pidana Korupsi)");
       }
 
       // Save results to paket object
@@ -216,16 +216,17 @@ class AnalisisService {
     final rincian = {
       'Penunjukan Langsung Nilai Besar': RingkasanKejanggalan(
         namaKategori: 'Penunjukan Langsung Nilai Besar',
-        penjelasan: 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas batas regulasi.',
-        focusedPenjelasan: (double limit) => 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(limit)}.',
+        penjelasan: 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas batas regulasi. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 38).',
+        focusedPenjelasan: (double limit) => 'Paket ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(limit)}. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 38).',
+        focusedLimit: false,
         jumlahTemuan: c1,
         totalNilaiTerdampak: v1,
         tingkatRisiko: 3,
       ),
       'Mendekati Batas Pengadaan Langsung': RingkasanKejanggalan(
         namaKategori: 'Mendekati Batas Pengadaan Langsung',
-        penjelasan: 'Nilai paket mendekati batas atas Pengadaan Langsung. Perlu dicek apakah seharusnya dilelang.',
-        focusedPenjelasan: (double limit) => 'Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(limit)}). Perlu dicek apakah seharusnya dilelang.',
+        penjelasan: 'Nilai paket mendekati batas atas Pengadaan Langsung. Perlu dicek apakah seharusnya dilelang. (Rujukan Perpres No. 12/2021 Pasal 38 Ayat (3)).',
+        focusedPenjelasan: (double limit) => 'Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(limit)}). Perlu dicek apakah seharusnya dilelang. (Rujukan Perpres No. 12/2021 Pasal 38 Ayat (3)).',
         focusedLimit: true,
         jumlahTemuan: c2,
         totalNilaiTerdampak: v2,
@@ -233,28 +234,32 @@ class AnalisisService {
       ),
       'Nama Paket Berulang di SKPD': RingkasanKejanggalan(
         namaKategori: 'Nama Paket Berulang di SKPD',
-        penjelasan: 'Nama paket identik muncul berulang kali di satu Satuan Kerja yang sama. Kemungkinan pemecahan paket sengaja.',
+        penjelasan: 'Nama paket identik muncul berulang kali di satu Satuan Kerja yang sama. Kemungkinan pemecahan paket sengaja. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d).',
+        focusedPenjelasan: null,
         jumlahTemuan: c3,
         totalNilaiTerdampak: v3,
         tingkatRisiko: 3,
       ),
       'Nama Paket Berulang Lintas SKPD': RingkasanKejanggalan(
         namaKategori: 'Nama Paket Berulang Lintas SKPD',
-        penjelasan: 'Paket dengan nama identik ditemukan di banyak Satuan Kerja berbeda sekaligus.',
+        penjelasan: 'Paket dengan nama identik ditemukan di banyak Satuan Kerja berbeda sekaligus. (Rujukan Pengawasan Efisiensi Pengadaan sesuai Perpres No. 12/2021 Pasal 6).',
+        focusedPenjelasan: null,
         jumlahTemuan: c4,
         totalNilaiTerdampak: v4,
         tingkatRisiko: 2,
       ),
       'Nilai Paket Sangat Kecil': RingkasanKejanggalan(
         namaKategori: 'Nilai Paket Sangat Kecil',
-        penjelasan: 'Nilai paket sangat kecil (di bawah Rp1 juta), perlu dipastikan kebenaran datanya.',
+        penjelasan: 'Nilai paket sangat kecil (di bawah Rp1 juta), perlu dipastikan kebenaran datanya. (Rujukan Prinsip Efisiensi Pengadaan sesuai Perpres No. 12/2021 Pasal 6).',
+        focusedPenjelasan: null,
         jumlahTemuan: c5,
         totalNilaiTerdampak: v5,
         tingkatRisiko: 3,
       ),
       'Pola Paket Serupa di SKPD': RingkasanKejanggalan(
         namaKategori: 'Pola Paket Serupa di SKPD',
-        penjelasan: 'Ditemukan banyak paket dengan nama mirip di satu Satuan Kerja yang sama. Indikasi pemecahan pekerjaan.',
+        penjelasan: 'Ditemukan banyak paket dengan nama mirip di satu Satuan Kerja yang sama. Indikasi pemecahan pekerjaan. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d).',
+        focusedPenjelasan: null,
         focusedLimit: false,
         jumlahTemuan: c6,
         totalNilaiTerdampak: v6,
@@ -262,8 +267,8 @@ class AnalisisService {
       ),
       'Indikasi Pecah Paket Pekerjaan': RingkasanKejanggalan(
         namaKategori: 'Indikasi Pecah Paket Pekerjaan',
-        penjelasan: 'Pengelompokan paket pekerjaan sejenis bernilai kecil untuk menghindari lelang umum.',
-        focusedPenjelasan: (double limit) => 'Pengelompokan paket pekerjaan sejenis bernilai kecil untuk menghindari lelang umum (akumulasi melebihi ${formatRupiah(limit)}).',
+        penjelasan: 'Pengelompokan paket pekerjaan sejenis bernilai kecil untuk menghindari lelang umum. (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3).',
+        focusedPenjelasan: (double limit) => 'Pengelompokan paket pekerjaan sejenis bernilai kecil untuk menghindari lelang umum (akumulasi melebihi ${formatRupiah(limit)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3).',
         focusedLimit: true,
         jumlahTemuan: c7,
         totalNilaiTerdampak: v7,
