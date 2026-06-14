@@ -8,8 +8,21 @@ class DetailProvider with ChangeNotifier {
   List<PaketPengadaan> filteredPakets = [];
   double totalNilaiTerdampak = 0.0;
   String penjelasanKategori = "";
+  int _visibleCount = 30;
+
+  List<PaketPengadaan> get visibleList => filteredPakets.take(_visibleCount).toList();
+  int get totalCount => filteredPakets.length;
+  bool get hasMore => _visibleCount < filteredPakets.length;
+
+  void loadMore() {
+    if (hasMore) {
+      _visibleCount += 30;
+      notifyListeners();
+    }
+  }
 
   void inisialisasi(String kategori, List<PaketPengadaan> paketList) {
+    _visibleCount = 30;
     double batasPL = 200000000.0;
     double batasPen = 500000000.0;
     try {

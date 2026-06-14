@@ -269,19 +269,19 @@ class _BerandaScreenState extends State<BerandaScreen> {
             const Divider(height: 20, thickness: 0.5),
             _buildRiskRow(
               color: warnaTinggi,
-              label: "Perlu Diperiksa (Tinggi)",
+              label: "Perlu Diperiksa",
               count: stats.totalTinggi,
             ),
             const Divider(height: 20, thickness: 0.5),
             _buildRiskRow(
               color: warnaWaspada,
-              label: "Pantau (Waspada)",
+              label: "Pantau",
               count: stats.totalWaspada,
             ),
             const Divider(height: 20, thickness: 0.5),
             _buildRiskRow(
               color: warnaNormal,
-              label: "Wajar (Normal)",
+              label: "Wajar",
               count: stats.totalNormal,
             ),
           ],

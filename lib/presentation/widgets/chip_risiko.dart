@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme.dart';
 
 class ChipRisiko extends StatelessWidget {
-  final int tingkat; // 0=normal, 1=waspada, 2=tinggi, 3=kritis
+  final int tingkat; // 0=normal, 1=waspada, 2=tinggi, 3=perlu perhatian segera
 
   const ChipRisiko({super.key, required this.tingkat});
 

@@ -1,6 +1,6 @@
-# Panduan Penggunaan Aplikasi — "Pantau Pengadaan"
+# Panduan Penggunaan Aplikasi — "Pantau RUP"
 
-Aplikasi **Pantau Pengadaan** adalah aplikasi Android berbasis Flutter yang dirancang untuk menganalisis data Rencana Umum Pengadaan (RUP) instansi pemerintah daerah secara lokal (offline). Aplikasi ini mendeteksi 6 jenis kejanggalan anggaran secara otomatis untuk membantu jurnalis, aktivis, dan masyarakat umum memantau alokasi dana daerah.
+Aplikasi **Pantau RUP** adalah aplikasi Android berbasis Flutter yang dirancang untuk menganalisis data Rencana Umum Pengadaan (RUP) instansi pemerintah daerah secara lokal (offline). Aplikasi ini mendeteksi 7 jenis kejanggalan anggaran secara otomatis untuk membantu jurnalis, aktivis, dan masyarakat umum memantau alokasi dana daerah.
 
 ---
 
@@ -62,7 +62,7 @@ Gunakan halaman **Daftar Paket Kerja** untuk menelusuri seluruh data secara flek
 * **Penyaringan (Saring)**: Ketuk ikon filter di pojok kanan atas untuk membatasi tampilan berdasarkan:
   * Dinas/Satuan Kerja (SKPD) tertentu.
   * Metode pengadaan tertentu.
-  * Tingkat risiko kejanggalan (Kritis, Tinggi, Waspada, Wajar).
+  * Tingkat risiko kejanggalan (Perlu Perhatian Segera, Tinggi, Waspada, Wajar).
 * **Pengurutan (Sortir)**: Pilih chip pengurutan di bawah bilah pencarian untuk menyusun paket berdasarkan:
   * Nilai Terbesar (Pagu tertinggi ke terendah)
   * Nilai Terkecil (Pagu terendah ke tertinggi)

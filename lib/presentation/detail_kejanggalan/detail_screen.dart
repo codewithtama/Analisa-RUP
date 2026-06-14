@@ -37,7 +37,7 @@ class DetailScreen extends StatelessWidget {
           ),
           body: Consumer<DetailProvider>(
             builder: (context, provider, child) {
-              final list = provider.filteredPakets;
+              final list = provider.visibleList;
 
               return Column(
                 children: [
@@ -51,7 +51,7 @@ class DetailScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Daftar Temuan (${list.length} Paket)",
+                          "Daftar Temuan (${provider.totalCount} Paket)",
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -67,11 +67,15 @@ class DetailScreen extends StatelessWidget {
                     child: list.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
-                            itemCount: list.length,
+                            itemCount: list.length + (provider.hasMore ? 1 : 0),
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             itemBuilder: (context, index) {
-                              final paket = list[index];
-                              return _buildPaketCard(context, paket);
+                              if (index < list.length) {
+                                final paket = list[index];
+                                return _buildPaketCard(context, paket);
+                              } else {
+                                return _buildLoadMoreWidget(provider);
+                              }
                             },
                           ),
                   ),
@@ -282,6 +286,27 @@ class DetailScreen extends StatelessWidget {
           Text(
             "Seluruh paket kerja wajar dalam kategori ini.",
             style: TextStyle(fontSize: 12, color: Colors.black38),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreWidget(DetailProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text(
+            "Menampilkan ${provider.visibleList.length} dari ${provider.totalCount} paket",
+            style: const TextStyle(fontSize: 12, color: Colors.black45),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () {
+              provider.loadMore();
+            },
+            child: const Text("Muat Lebih Banyak"),
           ),
         ],
       ),

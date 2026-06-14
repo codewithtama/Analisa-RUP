@@ -1,6 +1,6 @@
-# Pantau Pengadaan
+# Pantau RUP
 
-Pantau Pengadaan adalah aplikasi Android berbasis Flutter yang berfungsi untuk menganalisis data Rencana Umum Pengadaan (RUP) instansi pemerintah daerah secara lokal (tanpa koneksi internet). Aplikasi secara otomatis mendeteksi kejanggalan pada data anggaran dan menampilkan hasilnya dengan bahasa formal yang mudah dipahami masyarakat umum.
+Pantau RUP adalah aplikasi Android berbasis Flutter yang berfungsi untuk menganalisis data Rencana Umum Pengadaan (RUP) instansi pemerintah daerah secara lokal (tanpa koneksi internet). Aplikasi secara otomatis mendeteksi kejanggalan pada data anggaran dan menampilkan hasilnya dengan bahasa formal yang mudah dipahami masyarakat umum.
 
 Aplikasi ini ditujukan untuk jurnalis, aktivis antikorupsi, pegawai pengawas internal, dan masyarakat umum yang ingin memantau transparansi anggaran daerah.
 
@@ -37,7 +37,7 @@ Aplikasi ini ditujukan untuk jurnalis, aktivis antikorupsi, pegawai pengawas int
 - **Navigasi**: GoRouter
 - **Ekspor Laporan**: share_plus
 - **Grafik**: fl_chart
-- **Desain**: Material 3 dengan skema warna terstandardisasi (Biru Tua, Biru Sedang, Merah Kritis, Oranye Tinggi, Kuning Waspada, Hijau Wajar)
+- **Desain**: Material 3 dengan skema warna terstandardisasi (Biru Tua, Biru Sedang, Merah, Oranye, Kuning, Hijau)
 
 ---
 

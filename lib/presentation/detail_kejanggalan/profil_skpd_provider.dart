@@ -10,12 +10,17 @@ class ProfilSkpdProvider with ChangeNotifier {
   List<PaketPengadaan> _originalList = [];
   List<PaketPengadaan> _filteredList = [];
   String _searchQuery = "";
+  int _visibleCount = 30;
 
   List<PaketPengadaan> get filteredList => _filteredList;
+  List<PaketPengadaan> get visibleList => _filteredList.take(_visibleCount).toList();
+  int get totalCount => _filteredList.length;
+  bool get hasMore => _visibleCount < _filteredList.length;
   String get searchQuery => _searchQuery;
 
   void inisialisasi(String skpdName, List<PaketPengadaan> allPakets) {
     _searchQuery = "";
+    _visibleCount = 30;
     
     final Map<String, List<PaketPengadaan>> groups = {};
     for (final p in allPakets) {
@@ -56,7 +61,15 @@ class ProfilSkpdProvider with ChangeNotifier {
 
   void setSearchQuery(String query) {
     _searchQuery = query;
+    _visibleCount = 30;
     _filter();
+  }
+
+  void loadMore() {
+    if (hasMore) {
+      _visibleCount += 30;
+      notifyListeners();
+    }
   }
 
   void _filter() {

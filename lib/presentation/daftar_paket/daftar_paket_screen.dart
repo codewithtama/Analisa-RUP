@@ -42,7 +42,7 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
           ),
           body: Consumer<DaftarPaketProvider>(
             builder: (context, provider, child) {
-              final list = provider.filteredList;
+              final visibleList = provider.visibleList;
 
               return Column(
                 children: [
@@ -54,14 +54,18 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
 
                   // List of packets
                   Expanded(
-                    child: list.isEmpty
+                    child: visibleList.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
-                            itemCount: list.length,
+                            itemCount: visibleList.length + (provider.hasMore ? 1 : 0),
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             itemBuilder: (context, index) {
-                              final paket = list[index];
-                              return _buildPaketCard(paket);
+                              if (index < visibleList.length) {
+                                final paket = visibleList[index];
+                                return _buildPaketCard(paket);
+                              } else {
+                                return _buildLoadMoreWidget(provider);
+                              }
                             },
                           ),
                   ),
@@ -182,8 +186,8 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
 
     String getTingkatLabel(int t) {
       if (t == 3) return "Perlu Perhatian Segera";
-      if (t == 2) return "Tinggi";
-      if (t == 1) return "Waspada";
+      if (t == 2) return "Perlu Diperiksa";
+      if (t == 1) return "Pantau";
       return "Wajar";
     }
 
@@ -379,6 +383,27 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
     );
   }
 
+  Widget _buildLoadMoreWidget(DaftarPaketProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text(
+            "Menampilkan ${provider.visibleList.length} dari ${provider.totalCount} paket",
+            style: const TextStyle(fontSize: 12, color: Colors.black45),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () {
+              provider.loadMore();
+            },
+            child: const Text("Muat Lebih Banyak"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _tampilkanFilterBottomSheet(BuildContext outerContext) {
     final provider = Provider.of<DaftarPaketProvider>(outerContext, listen: false);
 
@@ -504,9 +529,9 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                         items: [
                           const DropdownMenuItem<int>(value: -1, child: Text("Semua Tingkat", style: TextStyle(fontSize: 13))),
                           const DropdownMenuItem<int>(value: 3, child: Text("Perlu Perhatian Segera", style: TextStyle(fontSize: 13))),
-                          const DropdownMenuItem<int>(value: 2, child: Text("Tinggi (Perlu Diperiksa)", style: TextStyle(fontSize: 13))),
-                          const DropdownMenuItem<int>(value: 1, child: Text("Waspada (Pantau)", style: TextStyle(fontSize: 13))),
-                          const DropdownMenuItem<int>(value: 0, child: Text("Wajar (Normal)", style: TextStyle(fontSize: 13))),
+                          const DropdownMenuItem<int>(value: 2, child: Text("Perlu Diperiksa", style: TextStyle(fontSize: 13))),
+                          const DropdownMenuItem<int>(value: 1, child: Text("Pantau", style: TextStyle(fontSize: 13))),
+                          const DropdownMenuItem<int>(value: 0, child: Text("Wajar", style: TextStyle(fontSize: 13))),
                         ],
                         onChanged: (val) {
                           setModalState(() {

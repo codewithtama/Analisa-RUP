@@ -14,7 +14,12 @@ class DaftarPaketProvider with ChangeNotifier {
   // Sort values: 0=Terbesar, 1=Terkecil, 2=Alfabet
   int _selectedSort = 0;
 
+  int _visibleCount = 50;
+
   List<PaketPengadaan> get filteredList => _filteredList;
+  List<PaketPengadaan> get visibleList => _filteredList.take(_visibleCount).toList();
+  int get totalCount => _filteredList.length;
+  bool get hasMore => _visibleCount < _filteredList.length;
   
   String get searchQuery => _searchQuery;
   String get selectedSkpd => _selectedSkpd;
@@ -49,36 +54,43 @@ class DaftarPaketProvider with ChangeNotifier {
     allMetode = metodes.toList()..sort();
     allJenis = jeniss.toList()..sort();
 
+    _visibleCount = 50;
     _filterAndSort();
   }
 
   void setSearchQuery(String val) {
     _searchQuery = val;
+    _visibleCount = 50;
     _filterAndSort();
   }
 
   void setSkpd(String val) {
     _selectedSkpd = val;
+    _visibleCount = 50;
     _filterAndSort();
   }
 
   void setTingkat(int val) {
     _selectedTingkat = val;
+    _visibleCount = 50;
     _filterAndSort();
   }
 
   void setMetode(String val) {
     _selectedMetode = val;
+    _visibleCount = 50;
     _filterAndSort();
   }
 
   void setJenis(String val) {
     _selectedJenis = val;
+    _visibleCount = 50;
     _filterAndSort();
   }
 
   void setSort(int val) {
     _selectedSort = val;
+    _visibleCount = 50;
     _filterAndSort();
   }
 
@@ -89,7 +101,15 @@ class DaftarPaketProvider with ChangeNotifier {
     _selectedMetode = "";
     _selectedJenis = "";
     _selectedSort = 0;
+    _visibleCount = 50;
     _filterAndSort();
+  }
+
+  void loadMore() {
+    if (hasMore) {
+      _visibleCount += 50;
+      notifyListeners();
+    }
   }
 
   void _filterAndSort() {

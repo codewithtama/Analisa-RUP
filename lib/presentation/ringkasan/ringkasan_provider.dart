@@ -142,7 +142,7 @@ class RingkasanProvider with ChangeNotifier {
       if (p.tingkatKejanggalan == 2) {
         tingkat = "Tinggi";
       } else if (p.tingkatKejanggalan == 3) {
-        tingkat = "Kritis";
+        tingkat = "Perlu Perhatian Segera";
       }
       final tingkatStr = '"$tingkat"';
 

@@ -27,7 +27,7 @@ class ProfilSkpdScreen extends StatelessWidget {
           body: Consumer<ProfilSkpdProvider>(
             builder: (context, provider, child) {
               final model = provider.selectedSkpdModel;
-              final list = provider.filteredList;
+              final visibleList = provider.visibleList;
 
               Color rankColor = warnaNormal;
               if (model.skorKerawanan >= 10.0) {
@@ -73,14 +73,18 @@ class ProfilSkpdScreen extends StatelessWidget {
 
                   // Packets List
                   Expanded(
-                    child: list.isEmpty
+                    child: visibleList.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
-                            itemCount: list.length,
+                            itemCount: visibleList.length + (provider.hasMore ? 1 : 0),
                             padding: const EdgeInsets.only(bottom: 16),
                             itemBuilder: (context, index) {
-                              final paket = list[index];
-                              return _buildPaketCard(context, paket);
+                              if (index < visibleList.length) {
+                                final paket = visibleList[index];
+                                return _buildPaketCard(context, paket);
+                              } else {
+                                return _buildLoadMoreWidget(provider);
+                              }
                             },
                           ),
                   ),
@@ -206,11 +210,11 @@ class ProfilSkpdScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Row(
         children: [
-          _buildCountBadge(warnaKritis, "Kritis", model.jumlahKritis),
+          _buildCountBadge(warnaKritis, "Perlu Perhatian Segera", model.jumlahKritis),
           const SizedBox(width: 8),
-          _buildCountBadge(warnaTinggi, "Tinggi", model.jumlahTinggi),
+          _buildCountBadge(warnaTinggi, "Perlu Diperiksa", model.jumlahTinggi),
           const SizedBox(width: 8),
-          _buildCountBadge(warnaWaspada, "Waspada", model.jumlahWaspada),
+          _buildCountBadge(warnaWaspada, "Pantau", model.jumlahWaspada),
         ],
       ),
     );
@@ -337,6 +341,27 @@ class ProfilSkpdScreen extends StatelessWidget {
           Text(
             "Coba ketik kata kunci pencarian lainnya.",
             style: TextStyle(fontSize: 12, color: Colors.black38),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreWidget(ProfilSkpdProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text(
+            "Menampilkan ${provider.visibleList.length} dari ${provider.totalCount} paket",
+            style: const TextStyle(fontSize: 12, color: Colors.black45),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () {
+              provider.loadMore();
+            },
+            child: const Text("Muat Lebih Banyak"),
           ),
         ],
       ),
