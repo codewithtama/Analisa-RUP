@@ -158,7 +158,7 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Terdapat $totalClusterSize paket dengan kemiripan nama >= 85% di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-cepah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
+        catatans.add("Terdapat $totalClusterSize paket dengan nama serupa (kemiripan >= 85%) di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-pecah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
       }
 
       // 7. Pola Pecah Paket Menghindari Tender (Advanced Rule)

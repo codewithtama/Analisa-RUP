@@ -177,7 +177,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
 
           if (provider.paketList.isEmpty) {
             return KosongPlaceholder(
-              actionLabel: "Impor Data Baru",
+              actionLabel: "Mulai",
               onActionPressed: () => context.push('/impor'),
             );
           }

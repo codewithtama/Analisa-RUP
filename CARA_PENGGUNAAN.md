@@ -35,7 +35,7 @@ Ikuti langkah-langkah berikut untuk mengompilasi dan menjalankan aplikasi pada p
 
 ### 1. Mengimpor Data RUP Baru
 Saat pertama kali membuka aplikasi, layar Beranda akan menampilkan status kosong karena belum ada data yang dimuat.
-* Ketuk tombol **"Impor Data Baru"** pada halaman Beranda (atau buka menu Impor).
+* Ketuk tombol **"Mulai"** pada halaman Beranda (atau buka menu Impor).
 * Ketuk tombol **"Pilih Berkas"** untuk membuka pemilih berkas sistem Anda.
 * Pilih berkas RUP Anda. Anda dapat mencoba menggunakan file contoh yang berada di folder proyek: `RUP TANGSEL.xlsx`.
 * Sistem akan menampilkan bilah kemajuan (*progress bar*) beserta nomor baris data yang sedang dibaca secara asinkron.
