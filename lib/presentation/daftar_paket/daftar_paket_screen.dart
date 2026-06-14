@@ -157,17 +157,10 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                   (val) => provider.setTahunAnggaran(val ?? ""),
                 ),
                 _buildDropdown(
-                  "Jenis Instansi",
-                  provider.selectedJenisInstansi,
-                  provider.allJenisInstansi,
-                  "Pilih Jenis Instansi",
-                  (val) => provider.setJenisInstansi(val ?? ""),
-                ),
-                _buildDropdown(
                   "Instansi",
                   provider.selectedInstansi,
-                  provider.filteredInstansiList,
-                  provider.selectedJenisInstansi.isEmpty ? "Semua Instansi" : "Pilih Instansi",
+                  provider.allInstansi,
+                  "Pilih Instansi",
                   (val) => provider.setInstansi(val ?? ""),
                 ),
                 _buildDropdown(

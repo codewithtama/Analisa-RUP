@@ -101,12 +101,18 @@ class ImporScreen extends StatelessWidget {
 
   Widget _buildPresetList(BuildContext context, ImporProvider provider, BerandaProvider berandaProvider) {
     final List<Map<String, String>> presets = [
-      {"name": "Kemenkeu", "path": "assets/dataRUP/RUP KEMENTRIAN KEUANGAN.xlsx"},
-      {"name": "Tangsel", "path": "assets/dataRUP/RUP TANGSEL.xlsx"},
+      {"name": "ANRI", "path": "assets/dataRUP/RUP ARSIP NASIONAL REPUBLIK INDONESIA.xlsx"},
+      {"name": "Badan Gizi", "path": "assets/dataRUP/RUP BADAN GIZI NASIONAL.xlsx"},
+      {"name": "BIN", "path": "assets/dataRUP/RUP BADAN INTELIJEN NEGARA.xlsx"},
       {"name": "BNN", "path": "assets/dataRUP/RUP BADAN NARKOTIKA NASIONAL.xlsx"},
-      {"name": "DPR", "path": "assets/dataRUP/RUP DEWAN PERWAKILAN RAKYAT.xlsx"},
-      {"name": "Polri", "path": "assets/dataRUP/RUP KEPOLISIAN REPUBLIK INDONESIA.xlsx"},
       {"name": "BPK", "path": "assets/dataRUP/RUP BADAN PEMERIKSA KEUANGAN.xlsx"},
+      {"name": "BSSN", "path": "assets/dataRUP/RUP BADAN SIBER DAN SANDI NEGARA.xlsx"},
+      {"name": "DPR", "path": "assets/dataRUP/RUP DEWAN PERWAKILAN RAKYAT.xlsx"},
+      {"name": "Kemenkeu", "path": "assets/dataRUP/RUP KEMENTRIAN KEUANGAN.xlsx"},
+      {"name": "Kemensetneg", "path": "assets/dataRUP/RUP KEMENTRIAN SEKRETARIAT NEGARA.xlsx"},
+      {"name": "Polri", "path": "assets/dataRUP/RUP KEPOLISIAN REPUBLIK INDONESIA.xlsx"},
+      {"name": "MPR", "path": "assets/dataRUP/RUP MAJELIS PERMUSYAWARATAN RAKYAT.xlsx"},
+      {"name": "Tangsel", "path": "assets/dataRUP/RUP TANGSEL.xlsx"},
     ];
 
     return Column(
@@ -117,7 +123,7 @@ class ImporScreen extends StatelessWidget {
             Expanded(child: Divider()),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text("Atau Coba Data Sampel", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: Text("Atau Pilih Data RUP 2026", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
             ),
             Expanded(child: Divider()),
           ],

@@ -10,7 +10,6 @@ class DaftarPaketProvider with ChangeNotifier {
   String _searchNamaPaket = "";
   
   String _selectedTahunAnggaran = "";
-  String _selectedJenisInstansi = "";
   String _selectedInstansi = "";
   String _selectedSatuanKerja = "";
   String _selectedCaraPengadaan = "";
@@ -29,55 +28,14 @@ class DaftarPaketProvider with ChangeNotifier {
   String get searchKodeRup => _searchKodeRup;
   String get searchNamaPaket => _searchNamaPaket;
   String get selectedTahunAnggaran => _selectedTahunAnggaran;
-  String get selectedJenisInstansi => _selectedJenisInstansi;
   String get selectedInstansi => _selectedInstansi;
   String get selectedSatuanKerja => _selectedSatuanKerja;
   String get selectedCaraPengadaan => _selectedCaraPengadaan;
   String get selectedSumberDana => _selectedSumberDana;
   int get selectedSort => _selectedSort;
 
-  String _getJenisInstansi(String instansi) {
-    final name = instansi.toUpperCase();
-    if (name.contains("KEMENTERIAN") || name.contains("KEMENTRIAN")) {
-      return "Kementerian";
-    } else if (name.contains("PEMERINTAH") ||
-        name.contains("PEMKAB") ||
-        name.contains("PEMKOT") ||
-        name.contains("PEMPROV") ||
-        name.contains("KABUPATEN") ||
-        name.contains("KOTA ") ||
-        name.contains("PROVINSI")) {
-      return "Pemerintah Daerah";
-    } else if (name.trim().isNotEmpty) {
-      return "Lembaga";
-    }
-    return "";
-  }
-
-  List<String> get filteredInstansiList {
-    if (_selectedJenisInstansi.isEmpty) {
-      return allInstansi;
-    }
-    final Set<String> res = {""};
-    for (final p in _originalList) {
-      if (p.namaInstansi.trim().isNotEmpty && _getJenisInstansi(p.namaInstansi) == _selectedJenisInstansi) {
-        res.add(p.namaInstansi.trim());
-      }
-    }
-    return res.toList()..sort();
-  }
-
   List<String> get filteredSatuanKerjaList {
     if (_selectedInstansi.isEmpty) {
-      if (_selectedJenisInstansi.isNotEmpty) {
-        final Set<String> res = {""};
-        for (final p in _originalList) {
-          if (p.namaSatuanKerja.trim().isNotEmpty && _getJenisInstansi(p.namaInstansi) == _selectedJenisInstansi) {
-            res.add(p.namaSatuanKerja.trim());
-          }
-        }
-        return res.toList()..sort();
-      }
       return allSatuanKerja;
     }
     final Set<String> res = {""};
@@ -90,7 +48,6 @@ class DaftarPaketProvider with ChangeNotifier {
   }
 
   List<String> allTahunAnggaran = [];
-  List<String> allJenisInstansi = [];
   List<String> allInstansi = [];
   List<String> allSatuanKerja = [];
   List<String> allCaraPengadaan = [];
@@ -104,16 +61,11 @@ class DaftarPaketProvider with ChangeNotifier {
     final Set<String> skpdSet = {""};
     final Set<String> caraSet = {""};
     final Set<String> sumberSet = {""};
-    final Set<String> jenisInstansiSet = {""};
     
     for (final p in list) {
       if (p.tahunAnggaran.trim().isNotEmpty) tahunSet.add(p.tahunAnggaran.trim());
       if (p.namaInstansi.trim().isNotEmpty) {
         instansiSet.add(p.namaInstansi.trim());
-        final jenis = _getJenisInstansi(p.namaInstansi);
-        if (jenis.isNotEmpty) {
-          jenisInstansiSet.add(jenis);
-        }
       }
       if (p.namaSatuanKerja.trim().isNotEmpty) skpdSet.add(p.namaSatuanKerja.trim());
       if (p.caraPengadaan.trim().isNotEmpty) caraSet.add(p.caraPengadaan.trim());
@@ -125,7 +77,6 @@ class DaftarPaketProvider with ChangeNotifier {
     allSatuanKerja = skpdSet.toList()..sort();
     allCaraPengadaan = caraSet.toList()..sort();
     allSumberDana = sumberSet.toList()..sort();
-    allJenisInstansi = jenisInstansiSet.toList()..sort();
 
     _visibleCount = 50;
     _filterAndSort();
@@ -149,14 +100,7 @@ class DaftarPaketProvider with ChangeNotifier {
     _filterAndSort();
   }
 
-  void setJenisInstansi(String val) {
-    _selectedJenisInstansi = val;
-    // reset dependents
-    _selectedInstansi = "";
-    _selectedSatuanKerja = "";
-    _visibleCount = 50;
-    _filterAndSort();
-  }
+
 
   void setInstansi(String val) {
     _selectedInstansi = val;
@@ -193,7 +137,6 @@ class DaftarPaketProvider with ChangeNotifier {
     _searchKodeRup = "";
     _searchNamaPaket = "";
     _selectedTahunAnggaran = "";
-    _selectedJenisInstansi = "";
     _selectedInstansi = "";
     _selectedSatuanKerja = "";
     _selectedCaraPengadaan = "";
@@ -225,10 +168,6 @@ class DaftarPaketProvider with ChangeNotifier {
 
     if (_selectedTahunAnggaran.isNotEmpty) {
       temp = temp.where((p) => p.tahunAnggaran.trim() == _selectedTahunAnggaran).toList();
-    }
-
-    if (_selectedJenisInstansi.isNotEmpty) {
-      temp = temp.where((p) => _getJenisInstansi(p.namaInstansi) == _selectedJenisInstansi).toList();
     }
 
     if (_selectedInstansi.isNotEmpty) {

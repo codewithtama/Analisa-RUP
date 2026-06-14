@@ -111,7 +111,7 @@ class ImporProvider with ChangeNotifier {
 
       _isImporting = true;
       _progress = 0.0;
-      _statusText = "Membaca berkas sampel...";
+      _statusText = "Membaca berkas RUP...";
       notifyListeners();
 
       final byteData = await rootBundle.load(assetPath);
@@ -142,7 +142,7 @@ class ImporProvider with ChangeNotifier {
         paketList: [],
         jumlahSatuanKerja: 0,
         jumlahKejanggalan: 0,
-        errorMessage: "Terjadi kesalahan saat memuat sampel: $e",
+        errorMessage: "Terjadi kesalahan saat memuat berkas RUP: $e",
         isSuccess: false,
       );
     } finally {
