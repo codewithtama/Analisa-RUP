@@ -130,7 +130,7 @@ class DialogDetailPaket extends StatelessWidget {
                 _DetailItem("Cara Pengadaan", paket.caraPengadaan.isEmpty ? "-" : paket.caraPengadaan),
                 _DetailItem("Metode Pengadaan", paket.metodePengadaan.isEmpty ? "-" : paket.metodePengadaan),
                 _DetailItem("Jenis Pengadaan", paket.jenisPengadaan.isEmpty ? "-" : paket.jenisPengadaan),
-                _DetailItem("Sumber Dana", paket.sumberDana.isEmpty ? "-" : paket.sumberDana),
+                _DetailItem("Sumber Dana", paket.sumberDana.isEmpty ? "-" : _jelaskanSumberDana(paket.sumberDana)),
               ]),
 
               const SizedBox(height: 16),
@@ -239,6 +239,39 @@ class DialogDetailPaket extends StatelessWidget {
         );
       }).toList(),
     );
+  }
+
+  String _jelaskanSumberDana(String sd) {
+    final clean = sd.trim().toUpperCase();
+    switch (clean) {
+      case 'APBD':
+        return 'APBD (Anggaran Pendapatan dan Belanja Daerah)';
+      case 'APBDP':
+        return 'APBDP (APBD Perubahan)';
+      case 'APBN':
+        return 'APBN (Anggaran Pendapatan dan Belanja Negara)';
+      case 'APBNP':
+        return 'APBNP (APBN Perubahan)';
+      case 'GABUNGAN_APBN_DAN_APBD':
+      case 'GABUNGAN APBN DAN APBD':
+        return 'Gabungan APBN dan APBD (Patungan Pusat & Daerah)';
+      case 'PHLN':
+        return 'PHLN (Pinjaman/Hibah Luar Negeri)';
+      case 'PNBP':
+        return 'PNBP (Penerimaan Negara Bukan Pajak)';
+      case 'BLUD':
+        return 'BLUD (Badan Layanan Umum Daerah)';
+      case 'BLU':
+        return 'BLU (Badan Layanan Umum Pusat)';
+      case 'BUMD':
+        return 'BUMD (Badan Usaha Milik Daerah)';
+      case 'BUMN':
+        return 'BUMN (Badan Usaha Milik Negara)';
+      case 'LAINNYA':
+        return 'Lainnya (Hibah/Dana Khusus)';
+      default:
+        return sd;
+    }
   }
 }
 

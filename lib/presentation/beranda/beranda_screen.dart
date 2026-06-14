@@ -8,8 +8,76 @@ import '../widgets/kartu_statistik.dart';
 import '../widgets/kosong_placeholder.dart';
 import '../widgets/skeleton_loader.dart';
 
-class BerandaScreen extends StatelessWidget {
+class BerandaScreen extends StatefulWidget {
   const BerandaScreen({super.key});
+
+  @override
+  State<BerandaScreen> createState() => _BerandaScreenState();
+}
+
+class _BerandaScreenState extends State<BerandaScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tampilkanWelcomeDialog();
+    });
+  }
+
+  void _tampilkanWelcomeDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          "Pantau Pengadaan",
+          style: TextStyle(
+            color: warnaPrimer,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Aplikasi ini dirancang khusus bagi aktivis dan masyarakat umum untuk mengawal transparansi anggaran Rencana Umum Pengadaan (RUP) daerah secara mandiri dan offline.",
+              style: TextStyle(fontSize: 13, height: 1.4),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Divider(color: Colors.grey.shade300, thickness: 0.5),
+            const SizedBox(height: 12),
+            const Text(
+              "Pengembang Aplikasi:",
+              style: TextStyle(fontSize: 11, color: Colors.black45),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "Dimas Alfa Pratama",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: warnaAksen,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+        actions: [
+          ElevatedButton(
+            child: const Text("Lanjutkan"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
