@@ -321,31 +321,35 @@ class _BerandaScreenState extends State<BerandaScreen> {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
         child: Column(
           children: [
             _buildRiskRow(
               color: warnaKritis,
               label: "Perlu Perhatian Segera",
               count: stats.totalKritis,
+              onTap: () => context.push('/daftar-paket?tingkat=3'),
             ),
-            const Divider(height: 20, thickness: 0.5),
+            const Divider(height: 1, thickness: 0.5),
             _buildRiskRow(
               color: warnaTinggi,
               label: "Perlu Diperiksa",
               count: stats.totalTinggi,
+              onTap: () => context.push('/daftar-paket?tingkat=2'),
             ),
-            const Divider(height: 20, thickness: 0.5),
+            const Divider(height: 1, thickness: 0.5),
             _buildRiskRow(
               color: warnaWaspada,
               label: "Pantau",
               count: stats.totalWaspada,
+              onTap: () => context.push('/daftar-paket?tingkat=1'),
             ),
-            const Divider(height: 20, thickness: 0.5),
+            const Divider(height: 1, thickness: 0.5),
             _buildRiskRow(
               color: warnaNormal,
               label: "Wajar",
               count: stats.totalNormal,
+              onTap: () => context.push('/daftar-paket?tingkat=0'),
             ),
           ],
         ),
@@ -353,40 +357,62 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
   }
 
-  Widget _buildRiskRow({required Color color, required String label, required int count}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
+  Widget _buildRiskRow({
+    required Color color,
+    required String label,
+    required int count,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            Row(
+              children: [
+                Text(
+                  "$count paket",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: count > 0 ? color : Colors.black38,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: Colors.black26,
+                ),
+              ],
             ),
           ],
         ),
-        Text(
-          "$count paket",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: count > 0 ? color : Colors.black38,
-          ),
-        ),
-      ],
+      ),
     );
   }
 

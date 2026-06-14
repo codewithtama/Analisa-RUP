@@ -24,7 +24,11 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/daftar-paket',
-      builder: (context, state) => const DaftarPaketScreen(),
+      builder: (context, state) {
+        final tingkatStr = state.uri.queryParameters['tingkat'];
+        final tingkat = tingkatStr != null ? int.tryParse(tingkatStr) : null;
+        return DaftarPaketScreen(tingkatKejanggalan: tingkat);
+      },
     ),
     GoRoute(
       path: '/detail-kejanggalan/:kategori',

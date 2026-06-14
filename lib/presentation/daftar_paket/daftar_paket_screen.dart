@@ -9,7 +9,8 @@ import '../widgets/chip_risiko.dart';
 import '../widgets/dialog_detail_paket.dart';
 
 class DaftarPaketScreen extends StatefulWidget {
-  const DaftarPaketScreen({super.key});
+  final int? tingkatKejanggalan;
+  const DaftarPaketScreen({super.key, this.tingkatKejanggalan});
 
   @override
   State<DaftarPaketScreen> createState() => _DaftarPaketScreenState();
@@ -30,7 +31,7 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
   Widget build(BuildContext context) {
     final list = Provider.of<BerandaProvider>(context, listen: false).paketList;
     return ChangeNotifierProvider<DaftarPaketProvider>(
-      create: (context) => DaftarPaketProvider()..inisialisasi(list),
+      create: (context) => DaftarPaketProvider()..inisialisasi(list, tingkatKejanggalan: widget.tingkatKejanggalan),
       builder: (context, child) {
         return Scaffold(
           backgroundColor: Colors.grey.shade50,
@@ -190,6 +191,13 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                   provider.allSumberDana,
                   "Semua sumber dana",
                   (val) => provider.setSumberDana(val ?? ""),
+                ),
+                _buildDropdown(
+                  "Tingkat Risiko",
+                  _mapTingkatToString(provider.selectedTingkatKejanggalan),
+                  ["Semua", "Perlu Perhatian Segera", "Perlu Diperiksa", "Pantau", "Wajar"],
+                  "Semua",
+                  (val) => provider.setTingkatKejanggalan(_mapStringToTingkat(val ?? "")),
                 ),
               ],
             ),
@@ -537,5 +545,35 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
         ],
       ),
     );
+  }
+
+  String _mapTingkatToString(int? tingkat) {
+    switch (tingkat) {
+      case 3:
+        return "Perlu Perhatian Segera";
+      case 2:
+        return "Perlu Diperiksa";
+      case 1:
+        return "Pantau";
+      case 0:
+        return "Wajar";
+      default:
+        return "Semua";
+    }
+  }
+
+  int? _mapStringToTingkat(String val) {
+    switch (val) {
+      case "Perlu Perhatian Segera":
+        return 3;
+      case "Perlu Diperiksa":
+        return 2;
+      case "Pantau":
+        return 1;
+      case "Wajar":
+        return 0;
+      default:
+        return null;
+    }
   }
 }

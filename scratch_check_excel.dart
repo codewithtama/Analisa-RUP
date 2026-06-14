@@ -1,90 +1,71 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, unused_element
 import 'dart:io';
 import 'package:excel/excel.dart';
-import 'lib/utils/fuzzy_match.dart';
+
+// Copy parser logic from import_service.dart to see if any file has headers issues
+String _getCellValueString(CellValue? value) {
+  if (value == null) return '';
+  return value.toString().trim();
+}
+
+double? _parseDouble(CellValue? value) {
+  if (value == null) return null;
+  if (value is DoubleCellValue) return value.value;
+  if (value is IntCellValue) return value.value.toDouble();
+  final s = value.toString().replaceAll(RegExp(r'[^0-9.-]'), '');
+  return double.tryParse(s);
+}
+
+void testFile(String filepath) {
+  final file = File(filepath);
+  if (!file.existsSync()) {
+    print('File $filepath NOT FOUND');
+    return;
+  }
+  
+  try {
+    final bytes = file.readAsBytesSync();
+    final excel = Excel.decodeBytes(bytes);
+    if (excel.tables.isEmpty) {
+      print('File $filepath: Empty tables');
+      return;
+    }
+    final sheet = excel.tables.values.first;
+    final rows = sheet.rows;
+    if (rows.isEmpty) {
+      print('File $filepath: Empty rows');
+      return;
+    }
+    
+    final headerRow = rows.first;
+    final headers = headerRow.map((c) => _getCellValueString(c?.value)).toList();
+    int idxInstansi = -1;
+    for (int i = 0; i < headers.length; i++) {
+      if (headers[i].toLowerCase() == 'nama instansi') {
+        idxInstansi = i;
+        break;
+      }
+    }
+    
+    String instansiVal = 'UNKNOWN';
+    if (idxInstansi != -1 && rows.length > 1) {
+      instansiVal = _getCellValueString(rows[1][idxInstansi]?.value);
+    }
+    print('File: ${filepath.split("/").last} => Instansi in file: "$instansiVal"');
+  } catch (e) {
+    print('File $filepath: ERROR $e');
+  }
+}
 
 void main() {
-  final file = 'assets/dataRUP/RUP TANGSEL.xlsx';
-  if (!File(file).existsSync()) {
-    print('File not found: $file');
+  final dir = Directory('assets/dataRUP');
+  if (!dir.existsSync()) {
+    print('assets/dataRUP directory not found');
     return;
   }
   
-  final bytes = File(file).readAsBytesSync();
-  final excel = Excel.decodeBytes(bytes);
-  final sheet = excel.tables.values.first;
-  
-  final rows = sheet.rows;
-  print('Total rows: ${rows.length}');
-  
-  // Find column indices
-  final headerRow = rows.first;
-  int idxNamaPaket = -1;
-  int idxNamaSatuanKerja = -1;
-  
-  for (int i = 0; i < headerRow.length; i++) {
-    final val = headerRow[i]?.value?.toString().toLowerCase().trim() ?? '';
-    if (val == 'nama paket') {
-      idxNamaPaket = i;
-    } else if (val == 'nama satuan kerja') {
-      idxNamaSatuanKerja = i;
-    }
+  final files = dir.listSync().whereType<File>().toList();
+  for (var f in files) {
+    testFile(f.path.replaceAll('\\', '/'));
   }
-  
-  print('idxNamaPaket: $idxNamaPaket, idxNamaSatuanKerja: $idxNamaSatuanKerja');
-  if (idxNamaPaket == -1 || idxNamaSatuanKerja == -1) {
-    return;
-  }
-  
-  final Map<String, List<String>> skpdPakets = {};
-  for (int i = 1; i < rows.length; i++) {
-    final row = rows[i];
-    if (row.length <= idxNamaPaket || row.length <= idxNamaSatuanKerja) continue;
-    final name = row[idxNamaPaket]?.value?.toString().trim() ?? '';
-    final skpd = row[idxNamaSatuanKerja]?.value?.toString().trim() ?? '';
-    if (name.isNotEmpty && skpd.isNotEmpty) {
-      skpdPakets.putIfAbsent(skpd, () => []).add(name);
-    }
-  }
-  
-  // Let's analyze clustering for SKPDs
-  skpdPakets.forEach((skpd, pakets) {
-    final List<List<String>> clusters = [];
-    for (final name in pakets) {
-      final cleanName = name.toLowerCase().trim();
-      bool matched = false;
-      for (final cluster in clusters) {
-        final repName = cluster.first.toLowerCase().trim();
-        if (FuzzyMatch.jaroWinkler(repName, cleanName) >= 0.85) {
-          cluster.add(name);
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) {
-        clusters.add([name]);
-      }
-    }
-    
-    // Print stats of clusters for SKPDs that have clusters > 5
-    int maxClusterSize = 0;
-    for (final cluster in clusters) {
-      if (cluster.length > maxClusterSize) {
-        maxClusterSize = cluster.length;
-      }
-    }
-    
-    if (maxClusterSize >= 3) {
-      print('SKPD: $skpd | Total pakets: ${pakets.length} | Clusters count: ${clusters.length} | Max cluster size: $maxClusterSize');
-      // Print the large clusters
-      for (final cluster in clusters) {
-        if (cluster.length >= 3) {
-          print('  - Large cluster (size ${cluster.length}):');
-          for (int i = 0; i < 5 && i < cluster.length; i++) {
-            print('    * ${cluster[i]}');
-          }
-        }
-      }
-    }
-  });
 }

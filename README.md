@@ -10,7 +10,7 @@ Aplikasi ini ditujukan untuk jurnalis, aktivis antikorupsi, pegawai pengawas int
 
 - **Impor Berkas RUP & Preset Data**: 
   - Mendukung unggah berkas Excel (.xlsx) dan CSV (.csv) secara lokal.
-  - Menyediakan fitur **Preset Data RUP 2026** melalui dropdown box untuk memuat secara instan berkas RUP dari 12 Kementerian/Lembaga/Daerah (misalnya DPR, Kementerian Keuangan, BNN, BIN, Polri, Pemkot Tangsel, dll.) yang tertanam di dalam aset aplikasi.
+  - Menyediakan fitur **Preset Data RUP 2026** melalui dropdown box untuk memuat secara instan berkas RUP dari 12 Kementerian/Lembaga/Daerah (misalnya DPR, Bendahara Umum Negara, BNN, BIN, Polri, Pemkot Tangsel, dll.) yang tertanam di dalam aset aplikasi.
 - **Deteksi Kejanggalan Anggaran Berbasis Regulasi**: Mesin analisis lokal otomatis mendeteksi 7 indikator risiko kejanggalan pengadaan yang dirujuk ke pasal-pasal Perpres No. 12/2021 dan UU No. 20/2001:
   1. **Penunjukan Langsung Nilai Besar**: Penunjukan langsung di atas batas regulasi Rp500 Juta (*Perpres No. 12/2021 Pasal 38*).
   2. **Mendekati Batas Pengadaan Langsung**: Paket pengadaan langsung bernilai Rp150 Juta - Rp200 Juta (*Perpres No. 12/2021 Pasal 38 Ayat (3)*).

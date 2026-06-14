@@ -14,6 +14,7 @@ class DaftarPaketProvider with ChangeNotifier {
   String _selectedSatuanKerja = "";
   String _selectedCaraPengadaan = "";
   String _selectedSumberDana = "";
+  int? _selectedTingkatKejanggalan;
   
   // Budget Range state
   double _minBudgetLimit = 0.0;
@@ -38,6 +39,7 @@ class DaftarPaketProvider with ChangeNotifier {
   String get selectedSatuanKerja => _selectedSatuanKerja;
   String get selectedCaraPengadaan => _selectedCaraPengadaan;
   String get selectedSumberDana => _selectedSumberDana;
+  int? get selectedTingkatKejanggalan => _selectedTingkatKejanggalan;
   
   double get minBudgetLimit => _minBudgetLimit;
   double get maxBudgetLimit => _maxBudgetLimit;
@@ -65,8 +67,9 @@ class DaftarPaketProvider with ChangeNotifier {
   List<String> allCaraPengadaan = [];
   List<String> allSumberDana = [];
 
-  void inisialisasi(List<PaketPengadaan> list) {
+  void inisialisasi(List<PaketPengadaan> list, {int? tingkatKejanggalan}) {
     _originalList = list;
+    _selectedTingkatKejanggalan = tingkatKejanggalan;
     
     final Set<String> tahunSet = {""};
     final Set<String> instansiSet = {""};
@@ -160,6 +163,12 @@ class DaftarPaketProvider with ChangeNotifier {
     _filterAndSort();
   }
 
+  void setTingkatKejanggalan(int? val) {
+    _selectedTingkatKejanggalan = val;
+    _visibleCount = 50;
+    _filterAndSort();
+  }
+
   void setSort(int val) {
     _selectedSort = val;
     _visibleCount = 50;
@@ -181,6 +190,7 @@ class DaftarPaketProvider with ChangeNotifier {
     _selectedSatuanKerja = "";
     _selectedCaraPengadaan = "";
     _selectedSumberDana = "";
+    _selectedTingkatKejanggalan = null;
     _selectedMinBudget = _minBudgetLimit;
     _selectedMaxBudget = _maxBudgetLimit;
     _selectedSort = 0;
@@ -226,6 +236,10 @@ class DaftarPaketProvider with ChangeNotifier {
 
     if (_selectedSumberDana.isNotEmpty) {
       temp = temp.where((p) => p.sumberDana.trim() == _selectedSumberDana).toList();
+    }
+
+    if (_selectedTingkatKejanggalan != null) {
+      temp = temp.where((p) => p.tingkatKejanggalan == _selectedTingkatKejanggalan).toList();
     }
 
     // Filter by budget range
