@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import '../../data/import_service.dart';
 import '../../data/hive_service.dart';
 import '../../data/models/paket_pengadaan.dart';
@@ -82,6 +85,64 @@ class ImporProvider with ChangeNotifier {
         jumlahSatuanKerja: 0,
         jumlahKejanggalan: 0,
         errorMessage: "Terjadi kesalahan saat mengimpor berkas: $e",
+        isSuccess: false,
+      );
+    } finally {
+      _isImporting = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> muatDariPreset({
+    required BuildContext context,
+    required String assetPath,
+    required bool forceOverwrite,
+    required void Function(List<PaketPengadaan>) onImportCompleted,
+    required List<PaketPengadaan> currentPaketList,
+  }) async {
+    _importResult = null;
+    notifyListeners();
+
+    try {
+      if (!forceOverwrite && currentPaketList.isNotEmpty) {
+        final proceed = await _tanyaKonfirmasi(context, assetPath.split('/').last);
+        if (!proceed) return;
+      }
+
+      _isImporting = true;
+      _progress = 0.0;
+      _statusText = "Membaca berkas sampel...";
+      notifyListeners();
+
+      final byteData = await rootBundle.load(assetPath);
+      final dir = await getTemporaryDirectory();
+      final tempFile = File('${dir.path}/${assetPath.split('/').last}');
+      await tempFile.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+
+      final double batasPL = await _hiveService.getBatasPL();
+      final double batasPenunjukan = await _hiveService.getBatasPenunjukan();
+
+      final result = await _importService.importFile(
+        tempFile.path,
+        batasPL,
+        batasPenunjukan,
+        (progressUpdate) {
+          _progress = progressUpdate.total > 0 ? (progressUpdate.current / progressUpdate.total) : 0.0;
+          _statusText = "${progressUpdate.status} (${progressUpdate.current}/${progressUpdate.total} baris)";
+          notifyListeners();
+        },
+      );
+
+      _importResult = result;
+      if (result.isSuccess && result.paketList.isNotEmpty) {
+        onImportCompleted(result.paketList);
+      }
+    } catch (e) {
+      _importResult = ImportResult(
+        paketList: [],
+        jumlahSatuanKerja: 0,
+        jumlahKejanggalan: 0,
+        errorMessage: "Terjadi kesalahan saat memuat sampel: $e",
         isSuccess: false,
       );
     } finally {

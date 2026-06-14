@@ -82,6 +82,7 @@ class ImporScreen extends StatelessWidget {
                         minimumSize: const Size(220, 52),
                       ),
                     ),
+                    _buildPresetList(context, imporProvider, berandaProvider),
                   ],
 
                   // Result Card
@@ -95,6 +96,56 @@ class ImporScreen extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildPresetList(BuildContext context, ImporProvider provider, BerandaProvider berandaProvider) {
+    final List<Map<String, String>> presets = [
+      {"name": "Kemenkeu", "path": "assets/dataRUP/RUP KEMENTRIAN KEUANGAN.xlsx"},
+      {"name": "Tangsel", "path": "assets/dataRUP/RUP TANGSEL.xlsx"},
+      {"name": "BNN", "path": "assets/dataRUP/RUP BADAN NARKOTIKA NASIONAL.xlsx"},
+      {"name": "DPR", "path": "assets/dataRUP/RUP DEWAN PERWAKILAN RAKYAT.xlsx"},
+      {"name": "Polri", "path": "assets/dataRUP/RUP KEPOLISIAN REPUBLIK INDONESIA.xlsx"},
+      {"name": "BPK", "path": "assets/dataRUP/RUP BADAN PEMERIKSA KEUANGAN.xlsx"},
+    ];
+
+    return Column(
+      children: [
+        const SizedBox(height: 32),
+        const Row(
+          children: [
+            Expanded(child: Divider()),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text("Atau Coba Data Sampel", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: presets.map((preset) => ActionChip(
+            label: Text(preset["name"]!),
+            avatar: const Icon(Icons.table_chart, size: 16, color: warnaAksen),
+            backgroundColor: warnaAksen.withValues(alpha: 0.05),
+            side: BorderSide(color: warnaAksen.withValues(alpha: 0.3)),
+            onPressed: () {
+              provider.muatDariPreset(
+                context: context,
+                assetPath: preset["path"]!,
+                forceOverwrite: false,
+                currentPaketList: berandaProvider.paketList,
+                onImportCompleted: (newList) {
+                  berandaProvider.updatePaketList(newList);
+                },
+              );
+            },
+          )).toList(),
+        ),
+      ],
     );
   }
 

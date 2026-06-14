@@ -5,11 +5,16 @@ class DaftarPaketProvider with ChangeNotifier {
   List<PaketPengadaan> _originalList = [];
   List<PaketPengadaan> _filteredList = [];
   
-  String _searchQuery = "";
-  String _selectedSkpd = "";
-  int _selectedTingkat = -1; // -1 means All
-  String _selectedMetode = "";
-  String _selectedJenis = "";
+  // Filter states
+  String _searchKodeRup = "";
+  String _searchNamaPaket = "";
+  
+  String _selectedTahunAnggaran = "";
+  String _selectedJenisInstansi = "";
+  String _selectedInstansi = "";
+  String _selectedSatuanKerja = "";
+  String _selectedCaraPengadaan = "";
+  String _selectedSumberDana = "";
   
   // Sort values: 0=Terbesar, 1=Terkecil, 2=Alfabet
   int _selectedSort = 0;
@@ -21,69 +26,159 @@ class DaftarPaketProvider with ChangeNotifier {
   int get totalCount => _filteredList.length;
   bool get hasMore => _visibleCount < _filteredList.length;
   
-  String get searchQuery => _searchQuery;
-  String get selectedSkpd => _selectedSkpd;
-  int get selectedTingkat => _selectedTingkat;
-  String get selectedMetode => _selectedMetode;
-  String get selectedJenis => _selectedJenis;
+  String get searchKodeRup => _searchKodeRup;
+  String get searchNamaPaket => _searchNamaPaket;
+  String get selectedTahunAnggaran => _selectedTahunAnggaran;
+  String get selectedJenisInstansi => _selectedJenisInstansi;
+  String get selectedInstansi => _selectedInstansi;
+  String get selectedSatuanKerja => _selectedSatuanKerja;
+  String get selectedCaraPengadaan => _selectedCaraPengadaan;
+  String get selectedSumberDana => _selectedSumberDana;
   int get selectedSort => _selectedSort;
 
-  List<String> allSkpd = [];
-  List<String> allMetode = [];
-  List<String> allJenis = [];
+  String _getJenisInstansi(String instansi) {
+    final name = instansi.toUpperCase();
+    if (name.contains("KEMENTERIAN") || name.contains("KEMENTRIAN")) {
+      return "Kementerian";
+    } else if (name.contains("PEMERINTAH") ||
+        name.contains("PEMKAB") ||
+        name.contains("PEMKOT") ||
+        name.contains("PEMPROV") ||
+        name.contains("KABUPATEN") ||
+        name.contains("KOTA ") ||
+        name.contains("PROVINSI")) {
+      return "Pemerintah Daerah";
+    } else if (name.trim().isNotEmpty) {
+      return "Lembaga";
+    }
+    return "";
+  }
+
+  List<String> get filteredInstansiList {
+    if (_selectedJenisInstansi.isEmpty) {
+      return allInstansi;
+    }
+    final Set<String> res = {""};
+    for (final p in _originalList) {
+      if (p.namaInstansi.trim().isNotEmpty && _getJenisInstansi(p.namaInstansi) == _selectedJenisInstansi) {
+        res.add(p.namaInstansi.trim());
+      }
+    }
+    return res.toList()..sort();
+  }
+
+  List<String> get filteredSatuanKerjaList {
+    if (_selectedInstansi.isEmpty) {
+      if (_selectedJenisInstansi.isNotEmpty) {
+        final Set<String> res = {""};
+        for (final p in _originalList) {
+          if (p.namaSatuanKerja.trim().isNotEmpty && _getJenisInstansi(p.namaInstansi) == _selectedJenisInstansi) {
+            res.add(p.namaSatuanKerja.trim());
+          }
+        }
+        return res.toList()..sort();
+      }
+      return allSatuanKerja;
+    }
+    final Set<String> res = {""};
+    for (final p in _originalList) {
+      if (p.namaSatuanKerja.trim().isNotEmpty && p.namaInstansi.trim() == _selectedInstansi) {
+        res.add(p.namaSatuanKerja.trim());
+      }
+    }
+    return res.toList()..sort();
+  }
+
+  List<String> allTahunAnggaran = [];
+  List<String> allJenisInstansi = [];
+  List<String> allInstansi = [];
+  List<String> allSatuanKerja = [];
+  List<String> allCaraPengadaan = [];
+  List<String> allSumberDana = [];
 
   void inisialisasi(List<PaketPengadaan> list) {
     _originalList = list;
     
-    final Set<String> skpds = {""};
-    final Set<String> metodes = {""};
-    final Set<String> jeniss = {""};
+    final Set<String> tahunSet = {""};
+    final Set<String> instansiSet = {""};
+    final Set<String> skpdSet = {""};
+    final Set<String> caraSet = {""};
+    final Set<String> sumberSet = {""};
+    final Set<String> jenisInstansiSet = {""};
+    
     for (final p in list) {
-      if (p.namaSatuanKerja.trim().isNotEmpty) {
-        skpds.add(p.namaSatuanKerja.trim());
+      if (p.tahunAnggaran.trim().isNotEmpty) tahunSet.add(p.tahunAnggaran.trim());
+      if (p.namaInstansi.trim().isNotEmpty) {
+        instansiSet.add(p.namaInstansi.trim());
+        final jenis = _getJenisInstansi(p.namaInstansi);
+        if (jenis.isNotEmpty) {
+          jenisInstansiSet.add(jenis);
+        }
       }
-      if (p.metodePengadaan.trim().isNotEmpty) {
-        metodes.add(p.metodePengadaan.trim());
-      }
-      if (p.jenisPengadaan.trim().isNotEmpty) {
-        jeniss.add(p.jenisPengadaan.trim());
-      }
+      if (p.namaSatuanKerja.trim().isNotEmpty) skpdSet.add(p.namaSatuanKerja.trim());
+      if (p.caraPengadaan.trim().isNotEmpty) caraSet.add(p.caraPengadaan.trim());
+      if (p.sumberDana.trim().isNotEmpty) sumberSet.add(p.sumberDana.trim());
     }
     
-    allSkpd = skpds.toList()..sort();
-    allMetode = metodes.toList()..sort();
-    allJenis = jeniss.toList()..sort();
+    allTahunAnggaran = tahunSet.toList()..sort((a, b) => b.compareTo(a)); // Descending year
+    allInstansi = instansiSet.toList()..sort();
+    allSatuanKerja = skpdSet.toList()..sort();
+    allCaraPengadaan = caraSet.toList()..sort();
+    allSumberDana = sumberSet.toList()..sort();
+    allJenisInstansi = jenisInstansiSet.toList()..sort();
 
     _visibleCount = 50;
     _filterAndSort();
   }
 
-  void setSearchQuery(String val) {
-    _searchQuery = val;
+  void setSearchKodeRup(String val) {
+    _searchKodeRup = val;
     _visibleCount = 50;
     _filterAndSort();
   }
 
-  void setSkpd(String val) {
-    _selectedSkpd = val;
+  void setSearchNamaPaket(String val) {
+    _searchNamaPaket = val;
     _visibleCount = 50;
     _filterAndSort();
   }
 
-  void setTingkat(int val) {
-    _selectedTingkat = val;
+  void setTahunAnggaran(String val) {
+    _selectedTahunAnggaran = val;
     _visibleCount = 50;
     _filterAndSort();
   }
 
-  void setMetode(String val) {
-    _selectedMetode = val;
+  void setJenisInstansi(String val) {
+    _selectedJenisInstansi = val;
+    // reset dependents
+    _selectedInstansi = "";
+    _selectedSatuanKerja = "";
     _visibleCount = 50;
     _filterAndSort();
   }
 
-  void setJenis(String val) {
-    _selectedJenis = val;
+  void setInstansi(String val) {
+    _selectedInstansi = val;
+    _selectedSatuanKerja = ""; // reset child
+    _visibleCount = 50;
+    _filterAndSort();
+  }
+
+  void setSatuanKerja(String val) {
+    _selectedSatuanKerja = val;
+    _visibleCount = 50;
+    _filterAndSort();
+  }
+
+  void setCaraPengadaan(String val) {
+    _selectedCaraPengadaan = val;
+    _visibleCount = 50;
+    _filterAndSort();
+  }
+
+  void setSumberDana(String val) {
+    _selectedSumberDana = val;
     _visibleCount = 50;
     _filterAndSort();
   }
@@ -95,11 +190,14 @@ class DaftarPaketProvider with ChangeNotifier {
   }
 
   void resetFilters() {
-    _searchQuery = "";
-    _selectedSkpd = "";
-    _selectedTingkat = -1;
-    _selectedMetode = "";
-    _selectedJenis = "";
+    _searchKodeRup = "";
+    _searchNamaPaket = "";
+    _selectedTahunAnggaran = "";
+    _selectedJenisInstansi = "";
+    _selectedInstansi = "";
+    _selectedSatuanKerja = "";
+    _selectedCaraPengadaan = "";
+    _selectedSumberDana = "";
     _selectedSort = 0;
     _visibleCount = 50;
     _filterAndSort();
@@ -115,29 +213,41 @@ class DaftarPaketProvider with ChangeNotifier {
   void _filterAndSort() {
     List<PaketPengadaan> temp = List.from(_originalList);
 
-    if (_searchQuery.trim().isNotEmpty) {
-      final query = _searchQuery.trim().toLowerCase();
-      temp = temp.where((p) =>
-          p.namaPaket.toLowerCase().contains(query) ||
-          p.kodeRup.toLowerCase().contains(query)).toList();
+    if (_searchKodeRup.trim().isNotEmpty) {
+      final query = _searchKodeRup.trim().toLowerCase();
+      temp = temp.where((p) => p.kodeRup.toLowerCase().contains(query)).toList();
     }
 
-    if (_selectedSkpd.isNotEmpty) {
-      temp = temp.where((p) => p.namaSatuanKerja.trim() == _selectedSkpd).toList();
+    if (_searchNamaPaket.trim().isNotEmpty) {
+      final query = _searchNamaPaket.trim().toLowerCase();
+      temp = temp.where((p) => p.namaPaket.toLowerCase().contains(query)).toList();
     }
 
-    if (_selectedTingkat != -1) {
-      temp = temp.where((p) => p.tingkatKejanggalan == _selectedTingkat).toList();
+    if (_selectedTahunAnggaran.isNotEmpty) {
+      temp = temp.where((p) => p.tahunAnggaran.trim() == _selectedTahunAnggaran).toList();
     }
 
-    if (_selectedMetode.isNotEmpty) {
-      temp = temp.where((p) => p.metodePengadaan.trim() == _selectedMetode).toList();
+    if (_selectedJenisInstansi.isNotEmpty) {
+      temp = temp.where((p) => _getJenisInstansi(p.namaInstansi) == _selectedJenisInstansi).toList();
     }
 
-    if (_selectedJenis.isNotEmpty) {
-      temp = temp.where((p) => p.jenisPengadaan.trim() == _selectedJenis).toList();
+    if (_selectedInstansi.isNotEmpty) {
+      temp = temp.where((p) => p.namaInstansi.trim() == _selectedInstansi).toList();
     }
 
+    if (_selectedSatuanKerja.isNotEmpty) {
+      temp = temp.where((p) => p.namaSatuanKerja.trim() == _selectedSatuanKerja).toList();
+    }
+
+    if (_selectedCaraPengadaan.isNotEmpty) {
+      temp = temp.where((p) => p.caraPengadaan.trim() == _selectedCaraPengadaan).toList();
+    }
+
+    if (_selectedSumberDana.isNotEmpty) {
+      temp = temp.where((p) => p.sumberDana.trim() == _selectedSumberDana).toList();
+    }
+
+    // Sort logic
     if (_selectedSort == 0) {
       temp.sort((a, b) => b.totalNilai.compareTo(a.totalNilai));
     } else if (_selectedSort == 1) {
