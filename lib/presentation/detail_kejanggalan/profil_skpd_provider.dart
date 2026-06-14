@@ -65,7 +65,9 @@ class ProfilSkpdProvider with ChangeNotifier {
     } else {
       final q = _searchQuery.trim().toLowerCase();
       _filteredList = _originalList
-          .where((p) => p.namaPaket.toLowerCase().contains(q))
+          .where((p) =>
+              p.namaPaket.toLowerCase().contains(q) ||
+              p.kodeRup.toLowerCase().contains(q))
           .toList();
     }
     notifyListeners();

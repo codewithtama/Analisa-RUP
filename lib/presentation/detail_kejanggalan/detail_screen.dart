@@ -209,7 +209,12 @@ class DetailScreen extends StatelessWidget {
                   ChipRisiko(tingkat: paket.tingkatKejanggalan),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              Text(
+                "Kode RUP: ${paket.kodeRup.isEmpty ? '-' : paket.kodeRup}",
+                style: const TextStyle(fontSize: 11, color: warnaAksen, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
               Text(
                 "SKPD: ${paket.namaSatuanKerja}",
                 style: const TextStyle(fontSize: 12, color: Colors.black54),

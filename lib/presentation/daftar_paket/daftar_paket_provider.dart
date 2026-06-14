@@ -9,6 +9,7 @@ class DaftarPaketProvider with ChangeNotifier {
   String _selectedSkpd = "";
   int _selectedTingkat = -1; // -1 means All
   String _selectedMetode = "";
+  String _selectedJenis = "";
   
   // Sort values: 0=Terbesar, 1=Terkecil, 2=Alfabet
   int _selectedSort = 0;
@@ -19,16 +20,19 @@ class DaftarPaketProvider with ChangeNotifier {
   String get selectedSkpd => _selectedSkpd;
   int get selectedTingkat => _selectedTingkat;
   String get selectedMetode => _selectedMetode;
+  String get selectedJenis => _selectedJenis;
   int get selectedSort => _selectedSort;
 
   List<String> allSkpd = [];
   List<String> allMetode = [];
+  List<String> allJenis = [];
 
   void inisialisasi(List<PaketPengadaan> list) {
     _originalList = list;
     
     final Set<String> skpds = {""};
     final Set<String> metodes = {""};
+    final Set<String> jeniss = {""};
     for (final p in list) {
       if (p.namaSatuanKerja.trim().isNotEmpty) {
         skpds.add(p.namaSatuanKerja.trim());
@@ -36,10 +40,14 @@ class DaftarPaketProvider with ChangeNotifier {
       if (p.metodePengadaan.trim().isNotEmpty) {
         metodes.add(p.metodePengadaan.trim());
       }
+      if (p.jenisPengadaan.trim().isNotEmpty) {
+        jeniss.add(p.jenisPengadaan.trim());
+      }
     }
     
     allSkpd = skpds.toList()..sort();
     allMetode = metodes.toList()..sort();
+    allJenis = jeniss.toList()..sort();
 
     _filterAndSort();
   }
@@ -64,6 +72,11 @@ class DaftarPaketProvider with ChangeNotifier {
     _filterAndSort();
   }
 
+  void setJenis(String val) {
+    _selectedJenis = val;
+    _filterAndSort();
+  }
+
   void setSort(int val) {
     _selectedSort = val;
     _filterAndSort();
@@ -74,6 +87,7 @@ class DaftarPaketProvider with ChangeNotifier {
     _selectedSkpd = "";
     _selectedTingkat = -1;
     _selectedMetode = "";
+    _selectedJenis = "";
     _selectedSort = 0;
     _filterAndSort();
   }
@@ -83,7 +97,9 @@ class DaftarPaketProvider with ChangeNotifier {
 
     if (_searchQuery.trim().isNotEmpty) {
       final query = _searchQuery.trim().toLowerCase();
-      temp = temp.where((p) => p.namaPaket.toLowerCase().contains(query)).toList();
+      temp = temp.where((p) =>
+          p.namaPaket.toLowerCase().contains(query) ||
+          p.kodeRup.toLowerCase().contains(query)).toList();
     }
 
     if (_selectedSkpd.isNotEmpty) {
@@ -96,6 +112,10 @@ class DaftarPaketProvider with ChangeNotifier {
 
     if (_selectedMetode.isNotEmpty) {
       temp = temp.where((p) => p.metodePengadaan.trim() == _selectedMetode).toList();
+    }
+
+    if (_selectedJenis.isNotEmpty) {
+      temp = temp.where((p) => p.jenisPengadaan.trim() == _selectedJenis).toList();
     }
 
     if (_selectedSort == 0) {

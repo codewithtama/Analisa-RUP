@@ -176,8 +176,9 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
     final bool hasSkpd = provider.selectedSkpd.isNotEmpty;
     final bool hasMetode = provider.selectedMetode.isNotEmpty;
     final bool hasTingkat = provider.selectedTingkat != -1;
+    final bool hasJenis = provider.selectedJenis.isNotEmpty;
 
-    if (!hasSkpd && !hasMetode && !hasTingkat) return const SizedBox.shrink();
+    if (!hasSkpd && !hasMetode && !hasTingkat && !hasJenis) return const SizedBox.shrink();
 
     String getTingkatLabel(int t) {
       if (t == 3) return "Perlu Perhatian Segera";
@@ -213,6 +214,11 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
             _buildActiveChip(
               "Tingkat: ${getTingkatLabel(provider.selectedTingkat)}",
               () => provider.setTingkat(-1),
+            ),
+          if (hasJenis)
+            _buildActiveChip(
+              "Jenis: ${provider.selectedJenis}",
+              () => provider.setJenis(""),
             ),
           Semantics(
             label: "Reset semua filter",
@@ -296,7 +302,12 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                   ChipRisiko(tingkat: paket.tingkatKejanggalan),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              Text(
+                "Kode RUP: ${paket.kodeRup.isEmpty ? '-' : paket.kodeRup}",
+                style: const TextStyle(fontSize: 11, color: warnaAksen, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
               Text(
                 "SKPD: ${paket.namaSatuanKerja}",
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
@@ -455,6 +466,30 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                         onChanged: (val) {
                           setModalState(() {
                             provider.setMetode(val ?? "");
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Dropdown Jenis
+                      const Text("Jenis Pengadaan (Barang/Jasa)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        initialValue: provider.selectedJenis,
+                        isExpanded: true,
+                        decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                        items: provider.allJenis.map((j) {
+                          return DropdownMenuItem<String>(
+                            value: j,
+                            child: Text(
+                              j.isEmpty ? "Semua Jenis" : j,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setModalState(() {
+                            provider.setJenis(val ?? "");
                           });
                         },
                       ),
