@@ -199,6 +199,32 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
+                "RENTANG PAGU ANGGARAN",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "${formatRupiah(provider.selectedMinBudget)} s/d ${formatRupiah(provider.selectedMaxBudget)}",
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: warnaAksen),
+            ),
+            const SizedBox(height: 4),
+            RangeSlider(
+              activeColor: warnaAksen,
+              inactiveColor: Colors.grey.shade200,
+              min: provider.minBudgetLimit,
+              max: provider.maxBudgetLimit,
+              values: RangeValues(provider.selectedMinBudget, provider.selectedMaxBudget),
+              onChanged: (values) {
+                provider.setBudgetRange(values.start, values.end);
+              },
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1, thickness: 1),
+            const SizedBox(height: 16),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
                 "PENCARIAN PAKET",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
               ),

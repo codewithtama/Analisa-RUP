@@ -15,6 +15,12 @@ class DaftarPaketProvider with ChangeNotifier {
   String _selectedCaraPengadaan = "";
   String _selectedSumberDana = "";
   
+  // Budget Range state
+  double _minBudgetLimit = 0.0;
+  double _maxBudgetLimit = 1000000.0;
+  double _selectedMinBudget = 0.0;
+  double _selectedMaxBudget = 1000000.0;
+  
   // Sort values: 0=Terbesar, 1=Terkecil, 2=Alfabet
   int _selectedSort = 0;
 
@@ -32,6 +38,12 @@ class DaftarPaketProvider with ChangeNotifier {
   String get selectedSatuanKerja => _selectedSatuanKerja;
   String get selectedCaraPengadaan => _selectedCaraPengadaan;
   String get selectedSumberDana => _selectedSumberDana;
+  
+  double get minBudgetLimit => _minBudgetLimit;
+  double get maxBudgetLimit => _maxBudgetLimit;
+  double get selectedMinBudget => _selectedMinBudget;
+  double get selectedMaxBudget => _selectedMaxBudget;
+  
   int get selectedSort => _selectedSort;
 
   List<String> get filteredSatuanKerjaList {
@@ -62,6 +74,9 @@ class DaftarPaketProvider with ChangeNotifier {
     final Set<String> caraSet = {""};
     final Set<String> sumberSet = {""};
     
+    double minVal = double.infinity;
+    double maxVal = -double.infinity;
+    
     for (final p in list) {
       if (p.tahunAnggaran.trim().isNotEmpty) tahunSet.add(p.tahunAnggaran.trim());
       if (p.namaInstansi.trim().isNotEmpty) {
@@ -70,7 +85,25 @@ class DaftarPaketProvider with ChangeNotifier {
       if (p.namaSatuanKerja.trim().isNotEmpty) skpdSet.add(p.namaSatuanKerja.trim());
       if (p.caraPengadaan.trim().isNotEmpty) caraSet.add(p.caraPengadaan.trim());
       if (p.sumberDana.trim().isNotEmpty) sumberSet.add(p.sumberDana.trim());
+      
+      if (p.totalNilai < minVal) minVal = p.totalNilai;
+      if (p.totalNilai > maxVal) maxVal = p.totalNilai;
     }
+    
+    if (minVal == double.infinity || maxVal == -double.infinity) {
+      _minBudgetLimit = 0.0;
+      _maxBudgetLimit = 1000000.0;
+    } else {
+      _minBudgetLimit = minVal;
+      _maxBudgetLimit = maxVal;
+    }
+    
+    if (_minBudgetLimit == _maxBudgetLimit) {
+      _maxBudgetLimit = _minBudgetLimit + 1000000.0;
+    }
+    
+    _selectedMinBudget = _minBudgetLimit;
+    _selectedMaxBudget = _maxBudgetLimit;
     
     allTahunAnggaran = tahunSet.toList()..sort((a, b) => b.compareTo(a)); // Descending year
     allInstansi = instansiSet.toList()..sort();
@@ -133,6 +166,13 @@ class DaftarPaketProvider with ChangeNotifier {
     _filterAndSort();
   }
 
+  void setBudgetRange(double minVal, double maxVal) {
+    _selectedMinBudget = minVal;
+    _selectedMaxBudget = maxVal;
+    _visibleCount = 50;
+    _filterAndSort();
+  }
+
   void resetFilters() {
     _searchKodeRup = "";
     _searchNamaPaket = "";
@@ -141,6 +181,8 @@ class DaftarPaketProvider with ChangeNotifier {
     _selectedSatuanKerja = "";
     _selectedCaraPengadaan = "";
     _selectedSumberDana = "";
+    _selectedMinBudget = _minBudgetLimit;
+    _selectedMaxBudget = _maxBudgetLimit;
     _selectedSort = 0;
     _visibleCount = 50;
     _filterAndSort();
@@ -185,6 +227,9 @@ class DaftarPaketProvider with ChangeNotifier {
     if (_selectedSumberDana.isNotEmpty) {
       temp = temp.where((p) => p.sumberDana.trim() == _selectedSumberDana).toList();
     }
+
+    // Filter by budget range
+    temp = temp.where((p) => p.totalNilai >= _selectedMinBudget && p.totalNilai <= _selectedMaxBudget).toList();
 
     // Sort logic
     if (_selectedSort == 0) {

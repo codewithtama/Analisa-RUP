@@ -1,6 +1,7 @@
 import '../data/models/paket_pengadaan.dart';
 import '../data/models/hasil_analisis.dart';
 import '../utils/format_rupiah.dart';
+import '../utils/fuzzy_match.dart';
 
 class AnalisisService {
   void analisisSemua(
@@ -13,16 +14,14 @@ class AnalisisService {
     final Map<String, Map<String, int>> skpdPaketCount = {};
     // 4. Nama Paket Berulang di Banyak Satuan Kerja: PaketNama -> set of SKPDs
     final Map<String, Set<String>> paketSkpdSet = {};
-    // 6. Kata Kunci Paket Berulang Banyak di Satu SKPD: SKPD -> Keyword (50 chars) -> count
-    final Map<String, Map<String, int>> skpdKeywordCount = {};
-    // 7. Grouping for Split Package check (SKPD -> Keyword -> List of packages)
-    final Map<String, Map<String, List<PaketPengadaan>>> skpdKeywordGroups = {};
 
-    // First pass to compute counts
+    // Fuzzy clustering: SKPD -> list of clusters. Each cluster is a list of PaketPengadaan.
+    final Map<String, List<List<PaketPengadaan>>> skpdFuzzyClusters = {};
+
+    // First pass to build counts and fuzzy clusters
     for (final paket in list) {
       final skpd = paket.namaSatuanKerja.trim();
       final nama = paket.namaPaket.trim().toLowerCase();
-      final keyword = nama.length > 50 ? nama.substring(0, 50) : nama;
 
       // For 3
       skpdPaketCount.putIfAbsent(skpd, () => {})[nama] = 
@@ -31,16 +30,47 @@ class AnalisisService {
       // For 4
       paketSkpdSet.putIfAbsent(nama, () => {}).add(skpd);
 
-      // For 6
-      skpdKeywordCount.putIfAbsent(skpd, () => {})[keyword] = 
-          (skpdKeywordCount[skpd]![keyword] ?? 0) + 1;
-
-      // For 7
-      skpdKeywordGroups
-          .putIfAbsent(skpd, () => {})
-          .putIfAbsent(keyword, () => [])
-          .add(paket);
+      // Build fuzzy clusters for this SKPD
+      final clusters = skpdFuzzyClusters.putIfAbsent(skpd, () => []);
+      bool matched = false;
+      for (final cluster in clusters) {
+        final repName = cluster.first.namaPaket.trim().toLowerCase();
+        if (FuzzyMatch.jaroWinkler(repName, nama) >= 0.85) {
+          cluster.add(paket);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        clusters.add([paket]);
+      }
     }
+
+    // Pre-calculate cumulative non-tender value for each fuzzy cluster
+    final Map<PaketPengadaan, double> paketClusterTotalVal = {};
+    final Map<PaketPengadaan, int> paketClusterSize = {};
+    final Map<PaketPengadaan, List<PaketPengadaan>> paketClusterMembers = {};
+
+    skpdFuzzyClusters.forEach((skpd, clusters) {
+      for (final cluster in clusters) {
+        // Find non-tender packages in this cluster
+        final nonTenderList = cluster.where((p) {
+          final m = p.metodePengadaan.trim().toLowerCase();
+          return m == 'pengadaan langsung' || m == 'penunjukan langsung';
+        }).toList();
+
+        double totalAkumulasi = 0.0;
+        for (final p in nonTenderList) {
+          totalAkumulasi += p.totalNilai;
+        }
+
+        for (final p in cluster) {
+          paketClusterTotalVal[p] = totalAkumulasi;
+          paketClusterSize[p] = nonTenderList.length;
+          paketClusterMembers[p] = nonTenderList;
+        }
+      }
+    });
 
     // Second pass to evaluate anomalies
     for (final paket in list) {
@@ -49,7 +79,6 @@ class AnalisisService {
 
       final skpd = paket.namaSatuanKerja.trim();
       final nama = paket.namaPaket.trim().toLowerCase();
-      final keyword = nama.length > 50 ? nama.substring(0, 50) : nama;
 
       // Helper to update maxTingkat
       void updateTingkat(int tingkat) {
@@ -119,31 +148,27 @@ class AnalisisService {
       }
 
       // 6. Kata Kunci Paket Berulang Banyak di Satu SKPD
-      final countKeyword = skpdKeywordCount[skpd]?[keyword] ?? 0;
-      if (countKeyword >= 30) {
+      final totalClusterSize = skpdFuzzyClusters[skpd]
+          ?.firstWhere((c) => c.contains(paket), orElse: () => [])
+          .length ?? 0;
+
+      if (totalClusterSize >= 30) {
         int tingkat = 2;
-        if (countKeyword >= 50) {
+        if (totalClusterSize >= 50) {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Terdapat $countKeyword paket dengan nama serupa di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-cepah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
+        catatans.add("Terdapat $totalClusterSize paket dengan kemiripan nama >= 85% di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-cepah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
       }
 
       // 7. Pola Pecah Paket Menghindari Tender (Advanced Rule)
-      final groupList = skpdKeywordGroups[skpd]?[keyword] ?? [];
-      final nonTenderList = groupList.where((p) {
-        final m = p.metodePengadaan.trim().toLowerCase();
-        return m == 'pengadaan langsung' || m == 'penunjukan langsung';
-      }).toList();
+      final clusterSize = paketClusterSize[paket] ?? 0;
+      final totalAkumulasi = paketClusterTotalVal[paket] ?? 0.0;
+      final members = paketClusterMembers[paket] ?? [];
 
-      double totalAkumulasi = 0.0;
-      for (final p in nonTenderList) {
-        totalAkumulasi += p.totalNilai;
-      }
-
-      if (nonTenderList.length > 1 && totalAkumulasi > batasPL && nonTenderList.contains(paket)) {
+      if (clusterSize > 1 && totalAkumulasi > batasPL && members.contains(paket)) {
         updateTingkat(3); // Perlu Perhatian Segera
-        catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena nama paket serupa dan total akumulasi nilainya (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3 tentang Pemberantasan Tindak Pidana Korupsi)");
+        catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena terdeteksi kemiripan nama paket >= 85% dalam satu SKPD, dengan total akumulasi nilai non-tender (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3 tentang Pemberantasan Tindak Pidana Korupsi)");
       }
 
       // Save results to paket object

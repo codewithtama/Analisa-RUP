@@ -6,8 +6,11 @@ import 'ringkasan_provider.dart';
 import '../beranda/beranda_provider.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
+import '../../utils/pdf_export_service.dart';
+import '../../data/models/paket_pengadaan.dart';
 import '../widgets/kartu_kejanggalan.dart';
 import '../widgets/skeleton_loader.dart';
+import '../widgets/dialog_detail_paket.dart';
 
 class RingkasanScreen extends StatelessWidget {
   const RingkasanScreen({super.key});
@@ -74,6 +77,11 @@ class RingkasanScreen extends StatelessWidget {
 
                   // Bar Chart Top 5 SKPD
                   _buildBarChartCard(ringkasanProv),
+
+                  const SizedBox(height: 16),
+
+                  // Scatter Plot Outlier Detection (New Feature)
+                  _buildScatterChartCard(context, berandaProv.paketList),
 
                   const SizedBox(height: 24),
 
@@ -420,26 +428,69 @@ class RingkasanScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final paketList = Provider.of<BerandaProvider>(context, listen: false).paketList;
-                  final errorMsg = await provider.eksporLaporanTemuan(paketList);
-                  if (!context.mounted) return;
-                  if (errorMsg != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(errorMsg),
-                        backgroundColor: errorMsg.contains("berhasil") ? warnaNormal : warnaKritis,
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.download_rounded, size: 18),
-                label: const Text("Ekspor CSV", style: TextStyle(fontSize: 12)),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(120, 36),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final paketList = Provider.of<BerandaProvider>(context, listen: false).paketList;
+                      final errorMsg = await provider.eksporLaporanTemuan(paketList);
+                      if (!context.mounted) return;
+                      if (errorMsg != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(errorMsg),
+                            backgroundColor: errorMsg.contains("berhasil") ? warnaNormal : warnaKritis,
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.download_rounded, size: 16),
+                    label: const Text("CSV", style: TextStyle(fontSize: 11)),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(80, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final berandaProv = Provider.of<BerandaProvider>(context, listen: false);
+                      final paketList = berandaProv.paketList;
+                      final stats = berandaProv.hasilAnalisis;
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Sedang menyusun laporan PDF...')),
+                      );
+                      
+                      final instansi = paketList.isNotEmpty ? paketList.first.namaInstansi : "Nasional (K/L/PD)";
+                      
+                      final errorMsg = await PdfExportService.exportToPdf(
+                        list: paketList,
+                        stats: stats,
+                        instansiName: instansi,
+                      );
+                      
+                      if (!context.mounted) return;
+                      if (errorMsg != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(errorMsg),
+                            backgroundColor: errorMsg.contains("berhasil") ? warnaNormal : warnaKritis,
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+                    label: const Text("PDF", style: TextStyle(fontSize: 11)),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(80, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      backgroundColor: warnaKritis,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -553,5 +604,191 @@ class RingkasanScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildScatterChartCard(BuildContext context, List<PaketPengadaan> originalList) {
+    if (originalList.isEmpty) return const SizedBox.shrink();
+
+    // Sort descending by totalNilai and take top 100
+    final sortedList = List<PaketPengadaan>.from(originalList);
+    sortedList.sort((a, b) => b.totalNilai.compareTo(a.totalNilai));
+    final top100 = sortedList.length > 100 ? sortedList.sublist(0, 100) : sortedList;
+
+    // We want to scale Y value to Millions (Rp Juta)
+    double maxY = 0.0;
+    for (final p in top100) {
+      final valJuta = p.totalNilai / 1000000.0;
+      if (valJuta > maxY) maxY = valJuta;
+    }
+    maxY = maxY > 0 ? maxY * 1.15 : 100.0;
+
+    final List<ScatterSpot> spots = [];
+    for (int i = 0; i < top100.length; i++) {
+      final paket = top100[i];
+      final valJuta = paket.totalNilai / 1000000.0;
+      spots.add(
+        ScatterSpot(
+          (i + 1).toDouble(),
+          valJuta,
+          dotPainter: FlDotCirclePainter(
+            color: _getRiskColor(paket.tingkatKejanggalan),
+            radius: _getRiskRadius(paket.tingkatKejanggalan),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Deteksi Outlier Anggaran (Top 100 Paket Terbesar)",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: warnaPrimer),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "Setiap titik adalah paket pengadaan. Nilai ekstrim di atas normal atau berwarna oranye/merah mengindikasikan deviasi anggaran berisiko tinggi. Ketuk titik untuk detail.",
+              style: TextStyle(fontSize: 11, color: Colors.black54),
+            ),
+            const SizedBox(height: 16),
+            
+            // Legend
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildLegendItem("Kritis", warnaKritis),
+                _buildLegendItem("Tinggi", warnaTinggi),
+                _buildLegendItem("Waspada", warnaWaspada),
+                _buildLegendItem("Wajar", warnaNormal),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Scatter Chart
+            SizedBox(
+              height: 220,
+              child: ScatterChart(
+                ScatterChartData(
+                  scatterSpots: spots,
+                  minX: 0,
+                  maxX: 105,
+                  minY: 0,
+                  maxY: maxY,
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawHorizontalLine: true,
+                    drawVerticalLine: true,
+                    getDrawingHorizontalLine: (val) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                    getDrawingVerticalLine: (val) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 60,
+                        getTitlesWidget: (value, meta) {
+                          if (value == 0) return const SizedBox.shrink();
+                          if (value >= 1000) {
+                            return Text(
+                              "Rp ${(value / 1000).toStringAsFixed(1)} M",
+                              style: const TextStyle(fontSize: 9, color: Colors.black54),
+                            );
+                          }
+                          return Text(
+                            "Rp ${value.toStringAsFixed(0)} Jt",
+                            style: const TextStyle(fontSize: 9, color: Colors.black54),
+                          );
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        getTitlesWidget: (value, meta) {
+                          if (value == 1 || value == 50 || value == 100) {
+                            return Text(
+                              "#${value.toStringAsFixed(0)}",
+                              style: const TextStyle(fontSize: 9, color: Colors.black54),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  scatterTouchData: ScatterTouchData(
+                    enabled: true,
+                    handleBuiltInTouches: false,
+                    touchCallback: (FlTouchEvent event, ScatterTouchResponse? touchResponse) {
+                      if (event is FlTapUpEvent && touchResponse != null && touchResponse.touchedSpot != null) {
+                        final index = touchResponse.touchedSpot!.spotIndex;
+                        if (index >= 0 && index < top100.length) {
+                          final paket = top100[index];
+                          DialogDetailPaket.tampilkan(context, paket);
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.black87, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  Color _getRiskColor(int tingkat) {
+    switch (tingkat) {
+      case 3:
+        return warnaKritis;
+      case 2:
+        return warnaTinggi;
+      case 1:
+        return warnaWaspada;
+      case 0:
+      default:
+        return warnaNormal;
+    }
+  }
+
+  double _getRiskRadius(int tingkat) {
+    switch (tingkat) {
+      case 3:
+        return 10.0;
+      case 2:
+        return 8.0;
+      case 1:
+        return 6.0;
+      case 0:
+      default:
+        return 4.0;
+    }
   }
 }

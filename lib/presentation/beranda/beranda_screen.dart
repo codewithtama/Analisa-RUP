@@ -29,6 +29,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        scrollable: true,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -66,28 +67,26 @@ class _BerandaScreenState extends State<BerandaScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.favorite_rounded, color: warnaKritis, size: 18),
-                  label: const Text("Donasi", style: TextStyle(color: warnaKritis)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: warnaKritis),
-                  ),
-                  onPressed: () {
-                    _tampilkanDonasiDialog();
-                  },
-                ),
-                ElevatedButton(
-                  child: const Text("Lanjutkan"),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
           ],
         ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actions: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.favorite_rounded, color: warnaKritis, size: 18),
+            label: const Text("Donasi", style: TextStyle(color: warnaKritis)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: warnaKritis),
+            ),
+            onPressed: () {
+              _tampilkanDonasiDialog();
+            },
+          ),
+          ElevatedButton(
+            child: const Text("Lanjutkan"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
     );
   }
@@ -96,6 +95,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -428,6 +428,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         title: const Text("Hapus Semua Data"),
         content: const Text(
           "Apakah Anda yakin ingin menghapus seluruh data yang tersimpan? Tindakan ini tidak dapat dibatalkan.",

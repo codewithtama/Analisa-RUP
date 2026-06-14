@@ -156,6 +156,7 @@ class ImporProvider with ChangeNotifier {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        scrollable: true,
         title: const Text("Ganti Data Sebelumnya?"),
         content: Text(
           "Anda memilih berkas '$filename'. Mengimpor data baru akan mengganti seluruh data pengadaan yang tersimpan sebelumnya. Lanjutkan?",
