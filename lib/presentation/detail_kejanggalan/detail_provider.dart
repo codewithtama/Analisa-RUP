@@ -102,7 +102,7 @@ class DetailProvider with ChangeNotifier {
       buffer.writeln("... dan ${filteredPakets.length - 10} paket lainnya.");
     }
 
-    buffer.writeln("\nDipantau melalui Aplikasi Pantau Pengadaan.");
+    buffer.writeln("\nDipantau melalui Aplikasi Pantau RUP.");
 
     await Share.share(buffer.toString(), subject: "Laporan Kejanggalan - $kategori");
   }

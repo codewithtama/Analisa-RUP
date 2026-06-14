@@ -1,3 +1,3 @@
 class Konstanta {
-  static const String namaAplikasi = "Pantau Pengadaan";
+  static const String namaAplikasi = "Pantau RUP";
 }

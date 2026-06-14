@@ -33,7 +33,7 @@ class PantauPengadaanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Pantau Pengadaan',
+      title: 'Pantau RUP',
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,

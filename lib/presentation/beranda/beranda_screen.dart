@@ -33,7 +33,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         title: const Text(
-          "Pantau Pengadaan",
+          "Pantau RUP",
           style: TextStyle(
             color: warnaPrimer,
             fontWeight: FontWeight.bold,
@@ -83,7 +83,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pantau Pengadaan"),
+        title: const Text("Pantau RUP"),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_rounded),
