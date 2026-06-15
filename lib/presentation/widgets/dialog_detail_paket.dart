@@ -110,6 +110,88 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
     }
   }
 
+  Future<void> _kirimLaporanEmail(BuildContext context) async {
+    final String instansi = _activePaket.namaInstansi.trim().isNotEmpty ? _activePaket.namaInstansi : "Pemerintah Daerah";
+    final String satker = _activePaket.namaSatuanKerja.trim().isNotEmpty ? _activePaket.namaSatuanKerja : "SKPD / Satuan Kerja";
+    final String paketNama = _activePaket.namaPaket;
+    final String pagu = formatRupiah(_activePaket.totalNilai);
+    final String metode = _activePaket.metodePengadaan;
+    final String kodeRup = _activePaket.kodeRup.trim().isNotEmpty ? _activePaket.kodeRup : "-";
+    final String sumberDana = _activePaket.sumberDana.trim().isNotEmpty ? _jelaskanSumberDana(_activePaket.sumberDana) : "-";
+    final String tahun = _activePaket.tahunAnggaran.trim().isNotEmpty ? _activePaket.tahunAnggaran : "2026";
+
+    final subject = "[PANTAU RUP] Laporan Potensi Pelanggaran RUP: $satker - $paketNama";
+
+    final StringBuffer bodyBuffer = StringBuffer();
+    bodyBuffer.writeln("Yth. Pimpinan Lembaga Pengawas (KPK, LKPP, BPK) & Tim Investigasi ICW,");
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("Dengan hormat,");
+    bodyBuffer.writeln("Melalui email ini, saya ingin melaporkan adanya indikasi kejanggalan dan potensi pelanggaran hukum dalam Rencana Umum Pengadaan (RUP) yang tercantum pada portal resmi Pemerintah.");
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("I. INFORMASI PAKET PENGADAAN YANG DILAPORKAN:");
+    bodyBuffer.writeln("- Nama Instansi / Pemda : $instansi");
+    bodyBuffer.writeln("- Satuan Kerja (SKPD)   : $satker");
+    bodyBuffer.writeln("- Nama Paket Pekerjaan  : $paketNama");
+    bodyBuffer.writeln("- Pagu Anggaran         : $pagu");
+    bodyBuffer.writeln("- Metode Pengadaan      : $metode");
+    bodyBuffer.writeln("- Sumber Dana           : $sumberDana");
+    bodyBuffer.writeln("- Kode RUP              : $kodeRup");
+    bodyBuffer.writeln("- Tahun Anggaran        : $tahun");
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("II. HASIL TEMUAN KEJANGGALAN & INDIKASI PELANGGARAN ATURAN:");
+    for (final note in _activePaket.catatanKejanggalan) {
+      bodyBuffer.writeln("- ${KejanggalanHelper.clean(note)}");
+    }
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("III. BUKTI PENDUKUNG YANG DILAMPIRKAN (Diisi oleh Pelapor):");
+    bodyBuffer.writeln("[Harap lampirkan bukti tambahan berikut pada email ini sebelum mengirim]:");
+    bodyBuffer.writeln("1. Foto fisik kondisi di lapangan saat ini (jika ada indikasi proyek fiktif atau mangkrak).");
+    bodyBuffer.writeln("2. Dokumen pendukung tambahan (Dokumen anggaran daerah, DPA, atau Kerangka Acuan Kerja).");
+    bodyBuffer.writeln("3. Screenshot tangkapan layar paket dari Portal SIRUP LKPP resmi.");
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("IV. SUMBER DATA UTAMA & TAUTAN VERIFIKASI:");
+    bodyBuffer.writeln("- Tautan Verifikasi Data SIRUP: https://sirup.lkpp.go.id/");
+    if (_activePaket.kodeRup.trim().isNotEmpty) {
+      bodyBuffer.writeln("- Tautan Detail Paket INAPROC: https://data.inaproc.id/rup?tahun=$tahun&offset=0&limit=20&search_rup=$kodeRup&kode=$kodeRup");
+    }
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("Laporan ini disusun dan dianalisis secara objektif menggunakan basis aturan hukum Perpres No. 12 Tahun 2021 tentang Pengadaan Barang/Jasa Pemerintah dan UU No. 20 Tahun 2001 tentang Pemberantasan Tindak Pidana Korupsi melalui aplikasi Pantau RUP.");
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("Saya bersedia dihubungi untuk klarifikasi lebih lanjut mengenai data pelaporan ini.");
+    bodyBuffer.writeln();
+    bodyBuffer.writeln("Hormat saya,");
+    bodyBuffer.writeln("[Nama Pelapor - *Dapat dikosongkan/disamarkan demi kerahasiaan*]");
+
+    // Target official and watchdog emails in Indonesia:
+    // - pengaduan@kpk.go.id (KPK)
+    // - humas@lkpp.go.id (LKPP)
+    // - contact@bpk.go.id (BPK)
+    // - lapor@indonesiacorruptionwatch.org (ICW)
+    const emailTo = "pengaduan@kpk.go.id,humas@lkpp.go.id,contact@bpk.go.id,lapor@indonesiacorruptionwatch.org";
+    
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: emailTo,
+      queryParameters: {
+        'subject': subject,
+        'body': bodyBuffer.toString(),
+      },
+    );
+
+    try {
+      await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Gagal membuka aplikasi email: $e"),
+            backgroundColor: warnaKritis,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -280,6 +362,18 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
               const SizedBox(height: 24),
 
               // Actions
+              if (_activePaket.catatanKejanggalan.isNotEmpty) ...[
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.mail_outline_rounded, size: 18),
+                  label: const Text("Laporkan Temuan (Email Dumas)"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: warnaKritis,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => _kirimLaporanEmail(context),
+                ),
+                const SizedBox(height: 12),
+              ],
               Row(
                 children: [
                   Expanded(

@@ -149,6 +149,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
         title: const Text("Pantau RUP"),
         actions: [
           IconButton(
+            icon: const Icon(Icons.gavel_rounded),
+            tooltip: "Kamus Hukum Pengadaan",
+            onPressed: () {
+              context.push('/kamus-hukum');
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_rounded),
             tooltip: "Pengaturan Analisis",
             onPressed: () {

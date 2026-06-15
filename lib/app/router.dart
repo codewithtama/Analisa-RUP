@@ -5,6 +5,7 @@ import '../presentation/ringkasan/ringkasan_screen.dart';
 import '../presentation/daftar_paket/daftar_paket_screen.dart';
 import '../presentation/detail_kejanggalan/detail_screen.dart';
 import '../presentation/detail_kejanggalan/profil_skpd_screen.dart';
+import '../presentation/detail_kejanggalan/kamus_hukum_screen.dart';
 import '../presentation/pengaturan/pengaturan_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -13,6 +14,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const BerandaScreen(),
+    ),
+    GoRoute(
+      path: '/kamus-hukum',
+      builder: (context, state) => const KamusHukumScreen(),
     ),
     GoRoute(
       path: '/impor',
