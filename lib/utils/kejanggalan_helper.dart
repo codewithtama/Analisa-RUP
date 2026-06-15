@@ -8,6 +8,42 @@ class KejanggalanHelper {
   static const String idNamaSerupaSkpd = '6';
   static const String idPecahPaketTender = '7';
 
+  // URLs to JDIH BPK for Indonesian regulations
+  static const Map<String, String> regulasiUrls = {
+    idPenunjukanBesar: 'https://peraturan.bpk.go.id/Details/161836/Perpres-No-12-Tahun-2021',
+    idMendekatiBatasPL: 'https://peraturan.bpk.go.id/Details/161836/Perpres-No-12-Tahun-2021',
+    idNamaBerulangSkpd: 'https://peraturan.bpk.go.id/Details/161836/Perpres-No-12-Tahun-2021',
+    idNamaBerulangLintas: 'https://peraturan.bpk.go.id/Details/161836/Perpres-No-12-Tahun-2021',
+    idNilaiSangatKecil: 'https://peraturan.bpk.go.id/Details/161836/Perpres-No-12-Tahun-2021',
+    idNamaSerupaSkpd: 'https://peraturan.bpk.go.id/Details/161836/Perpres-No-12-Tahun-2021',
+    idPecahPaketTender: 'https://peraturan.bpk.go.id/Details/44847/UU-No-20-Tahun-2001',
+  };
+
+  /// Extract category ID from warning message.
+  static String? getCategoryId(String note) {
+    if (note.startsWith('[') && note.contains(']')) {
+      final index = note.indexOf(']');
+      if (index != -1 && index < 5) {
+        return note.substring(1, index);
+      }
+    }
+    // Fallback detection based on matches
+    for (final id in [
+      idPenunjukanBesar,
+      idMendekatiBatasPL,
+      idNamaBerulangSkpd,
+      idNamaBerulangLintas,
+      idNilaiSangatKecil,
+      idNamaSerupaSkpd,
+      idPecahPaketTender,
+    ]) {
+      if (matches(note, id)) {
+        return id;
+      }
+    }
+    return null;
+  }
+
   /// Prepend category ID to warning message for structured persistence.
   static String format(String catId, String message) {
     return '[$catId] $message';

@@ -1,11 +1,12 @@
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import '../../data/hive_service.dart';
 import '../../domain/analisis_service.dart';
+import '../../data/models/paket_pengadaan.dart';
 import '../beranda/beranda_provider.dart';
 
 class PengaturanProvider with ChangeNotifier {
   final HiveService _hiveService = HiveService();
-  final AnalisisService _analisisService = AnalisisService();
 
   double _batasPL = 200000000.0;
   double _batasPenunjukan = 500000000.0;
@@ -60,15 +61,19 @@ class PengaturanProvider with ChangeNotifier {
       await _hiveService.setBatasPL(_batasPL);
       await _hiveService.setBatasPenunjukan(_batasPenunjukan);
 
-      // Re-run analysis on all existing packages
+      // Re-run analysis on all existing packages in a background isolate to prevent UI freeze (ANR)
       final paketList = await _hiveService.getSemuaPaket();
       if (paketList.isNotEmpty) {
-        _analisisService.analisisSemua(
-          paketList,
-          batasPL: _batasPL,
-          batasPenunjukan: _batasPenunjukan,
-        );
-        await _hiveService.simpanSemuaPaket(paketList);
+        final analyzedList = await Isolate.run<List<PaketPengadaan>>(() {
+          final service = AnalisisService();
+          service.analisisSemua(
+            paketList,
+            batasPL: _batasPL,
+            batasPenunjukan: _batasPenunjukan,
+          );
+          return paketList;
+        });
+        await _hiveService.simpanSemuaPaket(analyzedList);
       }
 
       // Update Beranda state

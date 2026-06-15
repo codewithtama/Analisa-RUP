@@ -197,11 +197,11 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
 
               // Catatan Kejanggalan (If Any)
               if (_activePaket.catatanKejanggalan.isNotEmpty) ...[
-                const Text("Temuan Analisis Risiko", style: TextStyle(fontSize: 11, color: Colors.black38)),
+                const Text("Temuan Analisis Risiko (Klik untuk lihat regulasi resmi)", style: TextStyle(fontSize: 11, color: Colors.black38)),
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: warnaKritis.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
@@ -209,25 +209,64 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                   ),
                   child: Column(
                     children: _activePaket.catatanKejanggalan.map((c) {
+                      final catId = KejanggalanHelper.getCategoryId(c);
+                      final url = catId != null ? KejanggalanHelper.regulasiUrls[catId] : null;
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 6.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.warning_amber_rounded, size: 16, color: warnaKritis),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                KejanggalanHelper.clean(c),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: warnaKritis,
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.4,
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: InkWell(
+                          onTap: url != null ? () async {
+                            try {
+                              final uri = Uri.parse(url);
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            } catch (e) {
+                              debugPrint("Gagal membuka tautan regulasi: $e");
+                            }
+                          } : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.warning_amber_rounded, size: 16, color: warnaKritis),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        KejanggalanHelper.clean(c),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: warnaKritis,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      if (url != null) ...[
+                                        const SizedBox(height: 4),
+                                        const Row(
+                                          children: [
+                                            Icon(Icons.open_in_new_rounded, size: 10, color: warnaKritis),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              "Lihat Regulasi Resmi (JDIH BPK)",
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: warnaKritis,
+                                                fontWeight: FontWeight.bold,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       );
                     }).toList(),

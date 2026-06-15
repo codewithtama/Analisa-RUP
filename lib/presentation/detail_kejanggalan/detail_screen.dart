@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'detail_provider.dart';
 import '../beranda/beranda_provider.dart';
 import '../../app/theme.dart';
@@ -103,6 +104,9 @@ class DetailScreen extends StatelessWidget {
   }
 
   Widget _buildHeaderCard(DetailProvider provider) {
+    final catId = KejanggalanHelper.mapKategoriToId(kategori);
+    final url = catId != null ? KejanggalanHelper.regulasiUrls[catId] : null;
+
     return Card(
       margin: const EdgeInsets.all(16.0),
       color: Colors.white,
@@ -133,6 +137,39 @@ class DetailScreen extends StatelessWidget {
                 height: 1.4,
               ),
             ),
+            if (url != null) ...[
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () async {
+                  try {
+                    final uri = Uri.parse(url);
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } catch (e) {
+                    debugPrint("Gagal membuka tautan regulasi: $e");
+                  }
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.gavel_rounded, size: 14, color: warnaAksen),
+                      SizedBox(width: 6),
+                      Text(
+                        "Baca Regulasi Resmi di JDIH BPK",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: warnaAksen,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const Divider(height: 24, thickness: 0.5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

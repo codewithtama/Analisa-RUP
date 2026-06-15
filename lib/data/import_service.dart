@@ -310,6 +310,8 @@ String _getCellValueString(dynamic value) {
 double? _parseDouble(dynamic val) {
   if (val == null) return null;
   if (val is num) return val.toDouble();
+  if (val is DoubleCellValue) return val.value;
+  if (val is IntCellValue) return val.value.toDouble();
   final String s = val.toString().trim();
   if (s.isEmpty) return null;
 
