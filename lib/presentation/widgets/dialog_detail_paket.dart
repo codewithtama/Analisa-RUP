@@ -30,18 +30,36 @@ class DialogDetailPaket extends StatefulWidget {
 }
 
 class _DialogDetailPaketState extends State<DialogDetailPaket> {
+  late PaketPengadaan _activePaket;
   int _currentPage = 1;
   static const int _itemsPerPage = 5;
 
-  Future<void> _bukaTautanSirup(BuildContext context) async {
-    if (widget.paket.kodeRup.trim().isEmpty) return;
+  @override
+  void initState() {
+    super.initState();
+    _activePaket = widget.paket;
+  }
 
-    final isSwakelola = widget.paket.caraPengadaan.toLowerCase().contains('swakelola');
+  @override
+  void didUpdateWidget(DialogDetailPaket oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.paket != widget.paket) {
+      setState(() {
+        _activePaket = widget.paket;
+        _currentPage = 1;
+      });
+    }
+  }
+
+  Future<void> _bukaTautanSirup(BuildContext context) async {
+    if (_activePaket.kodeRup.trim().isEmpty) return;
+
+    final isSwakelola = _activePaket.caraPengadaan.toLowerCase().contains('swakelola');
     final String tipeSumber = isSwakelola ? "Swakelola" : "Penyedia";
-    final String tahun = widget.paket.tahunAnggaran.trim().isNotEmpty
-        ? widget.paket.tahunAnggaran.trim()
+    final String tahun = _activePaket.tahunAnggaran.trim().isNotEmpty
+        ? _activePaket.tahunAnggaran.trim()
         : "2026";
-    final String kodeRup = widget.paket.kodeRup.trim();
+    final String kodeRup = _activePaket.kodeRup.trim();
 
     final String url =
         "https://data.inaproc.id/rup?tahun=$tahun&offset=0&limit=20&search_rup=$kodeRup&kode=$kodeRup&detail_sumber=$tipeSumber&sumber=$tipeSumber";
@@ -100,7 +118,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                       ),
                     ),
                   ),
-                  ChipRisiko(tingkat: widget.paket.tingkatKejanggalan),
+                  ChipRisiko(tingkat: _activePaket.tingkatKejanggalan),
                 ],
               ),
               const Divider(height: 24, thickness: 0.5),
@@ -109,7 +127,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
               const Text("Nama Pekerjaan", style: TextStyle(fontSize: 11, color: Colors.black38)),
               const SizedBox(height: 4),
               Text(
-                widget.paket.namaPaket,
+                _activePaket.namaPaket,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -123,7 +141,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
               const Text("Pagu Anggaran", style: TextStyle(fontSize: 11, color: Colors.black38)),
               const SizedBox(height: 4),
               Text(
-                formatRupiah(widget.paket.totalNilai),
+                formatRupiah(_activePaket.totalNilai),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -134,20 +152,20 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
 
               // Metadata Grid
               _buildGridDetail([
-                _DetailItem("Kode RUP", widget.paket.kodeRup.isEmpty ? "-" : widget.paket.kodeRup),
-                _DetailItem("Tahun Anggaran", widget.paket.tahunAnggaran.isEmpty ? "-" : widget.paket.tahunAnggaran),
-                _DetailItem("Instansi", widget.paket.namaInstansi.isEmpty ? "-" : widget.paket.namaInstansi),
-                _DetailItem("Satuan Kerja (SKPD)", widget.paket.namaSatuanKerja.isEmpty ? "-" : widget.paket.namaSatuanKerja),
-                _DetailItem("Cara Pengadaan", widget.paket.caraPengadaan.isEmpty ? "-" : widget.paket.caraPengadaan),
-                _DetailItem("Metode Pengadaan", widget.paket.metodePengadaan.isEmpty ? "-" : widget.paket.metodePengadaan),
-                _DetailItem("Jenis Pengadaan", widget.paket.jenisPengadaan.isEmpty ? "-" : widget.paket.jenisPengadaan),
-                _DetailItem("Sumber Dana", widget.paket.sumberDana.isEmpty ? "-" : _jelaskanSumberDana(widget.paket.sumberDana)),
+                _DetailItem("Kode RUP", _activePaket.kodeRup.isEmpty ? "-" : _activePaket.kodeRup),
+                _DetailItem("Tahun Anggaran", _activePaket.tahunAnggaran.isEmpty ? "-" : _activePaket.tahunAnggaran),
+                _DetailItem("Instansi", _activePaket.namaInstansi.isEmpty ? "-" : _activePaket.namaInstansi),
+                _DetailItem("Satuan Kerja (SKPD)", _activePaket.namaSatuanKerja.isEmpty ? "-" : _activePaket.namaSatuanKerja),
+                _DetailItem("Cara Pengadaan", _activePaket.caraPengadaan.isEmpty ? "-" : _activePaket.caraPengadaan),
+                _DetailItem("Metode Pengadaan", _activePaket.metodePengadaan.isEmpty ? "-" : _activePaket.metodePengadaan),
+                _DetailItem("Jenis Pengadaan", _activePaket.jenisPengadaan.isEmpty ? "-" : _activePaket.jenisPengadaan),
+                _DetailItem("Sumber Dana", _activePaket.sumberDana.isEmpty ? "-" : _jelaskanSumberDana(_activePaket.sumberDana)),
               ]),
 
               const SizedBox(height: 16),
 
               // Catatan Kejanggalan (If Any)
-              if (widget.paket.catatanKejanggalan.isNotEmpty) ...[
+              if (_activePaket.catatanKejanggalan.isNotEmpty) ...[
                 const Text("Temuan Analisis Risiko", style: TextStyle(fontSize: 11, color: Colors.black38)),
                 const SizedBox(height: 8),
                 Container(
@@ -159,7 +177,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                     border: Border.all(color: warnaKritis.withValues(alpha: 0.15)),
                   ),
                   child: Column(
-                    children: widget.paket.catatanKejanggalan.map((c) {
+                    children: _activePaket.catatanKejanggalan.map((c) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 6.0),
                         child: Row(
@@ -200,7 +218,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  if (widget.paket.kodeRup.trim().isNotEmpty) ...[
+                  if (_activePaket.kodeRup.trim().isNotEmpty) ...[
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
@@ -222,15 +240,26 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
   List<PaketPengadaan> _findPaketSerupa(BuildContext context) {
     try {
       final allPaket = Provider.of<BerandaProvider>(context, listen: false).paketList;
-      final skpd = widget.paket.namaSatuanKerja.trim();
-      final nama = widget.paket.namaPaket.trim().toLowerCase();
+      final skpd = _activePaket.namaSatuanKerja.trim();
+      final nama = _activePaket.namaPaket.trim().toLowerCase();
+      final len = nama.length;
 
-      return allPaket.where((p) {
-        if (p.namaSatuanKerja.trim() != skpd || p == widget.paket) {
+      // 1. Filter by SKPD and exclude self (extremely fast pre-filtering)
+      final skpdPakets = allPaket.where((p) {
+        return p.namaSatuanKerja.trim() == skpd && p != _activePaket;
+      }).toList();
+
+      // 2. Perform fuzzy Jaro-Winkler match only on the small subset with length constraint
+      return skpdPakets.where((p) {
+        final otherNama = p.namaPaket.trim().toLowerCase();
+        if (otherNama == nama) return true;
+
+        final otherLen = otherNama.length;
+        if (otherLen < len * 0.5 || otherLen > len * 2.0) {
           return false;
         }
-        final otherNama = p.namaPaket.trim().toLowerCase();
-        return otherNama == nama || FuzzyMatch.jaroWinkler(otherNama, nama) >= 0.85;
+
+        return FuzzyMatch.jaroWinkler(otherNama, nama) >= 0.85;
       }).toList();
     } catch (e) {
       return [];
@@ -242,7 +271,6 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
     if (paketSerupa.isEmpty) return const SizedBox.shrink();
 
     final totalPages = (paketSerupa.length / _itemsPerPage).ceil();
-    // In case the list changes or pages get out of sync, clamp it safely
     final currentPage = _currentPage.clamp(1, totalPages);
     
     final paginatedList = paketSerupa
@@ -297,11 +325,9 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                   final item = paginatedList[index];
                   return InkWell(
                     onTap: () {
-                      Navigator.pop(context); // Close current modal
-                      Future.delayed(const Duration(milliseconds: 150), () {
-                        if (context.mounted) {
-                          DialogDetailPaket.tampilkan(context, item);
-                        }
+                      setState(() {
+                        _activePaket = item;
+                        _currentPage = 1; // Reset to page 1 for the new active package
                       });
                     },
                     borderRadius: (index == paginatedList.length - 1 && totalPages <= 1)
