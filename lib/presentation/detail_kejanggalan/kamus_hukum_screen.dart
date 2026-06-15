@@ -239,11 +239,12 @@ class KamusHukumScreen extends StatelessWidget {
                   Center(
                     child: TextButton.icon(
                       onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
                         try {
                           final uri = Uri.parse(url);
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: Text("Gagal membuka halaman regulasi: $e"),
                               backgroundColor: warnaKritis,
