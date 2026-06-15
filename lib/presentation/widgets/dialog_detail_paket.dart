@@ -35,11 +35,13 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
   int _currentPage = 1;
   static const int _itemsPerPage = 5;
   List<PaketPengadaan> _paketSerupaList = [];
+  late String _pseudonym;
 
   @override
   void initState() {
     super.initState();
     _activePaket = widget.paket;
+    _pseudonym = KejanggalanHelper.generatePseudonym();
     _updatePaketSerupa();
   }
 
@@ -160,7 +162,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
     bodyBuffer.writeln("Saya bersedia dihubungi untuk klarifikasi lebih lanjut mengenai data pelaporan ini.");
     bodyBuffer.writeln();
     bodyBuffer.writeln("Hormat saya,");
-    bodyBuffer.writeln("[Nama Pelapor - *Dapat dikosongkan/disamarkan demi kerahasiaan*]");
+    bodyBuffer.writeln("$_pseudonym (Identitas Samaran Pelapor)");
 
     // Target official and watchdog emails in Indonesia:
     // - pengaduan@kpk.go.id (KPK)
@@ -363,6 +365,43 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
 
               // Actions
               if (_activePaket.catatanKejanggalan.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: warnaNormal.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: warnaNormal.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.security_rounded, size: 16, color: warnaNormal),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Identitas Samaran: $_pseudonym",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: warnaNormal,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh_rounded, size: 18, color: warnaNormal),
+                        tooltip: "Acak Ulang Identitas",
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () {
+                          setState(() {
+                            _pseudonym = KejanggalanHelper.generatePseudonym();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.mail_outline_rounded, size: 18),
                   label: const Text("Laporkan Temuan (Email Dumas)"),

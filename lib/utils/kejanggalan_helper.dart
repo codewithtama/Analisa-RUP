@@ -19,6 +19,25 @@ class KejanggalanHelper {
     idPecahPaketTender: 'https://peraturan.bpk.go.id/Details/44847/UU-No-20-Tahun-2001',
   };
 
+  /// Generate a random pseudonym for anonymous whistleblower reporting.
+  static String generatePseudonym() {
+    final List<String> kataDepan = [
+      "Warga", "Masyarakat", "Aktivis", "Pengamat", "Investigator", 
+      "Pembayar Pajak", "Pengawal", "Relawan", "Sahabat", "Auditor Sipil"
+    ];
+    final List<String> kataBelakang = [
+      "Peduli", "Transparan", "Sipil", "Bebas", "Adil", 
+      "Independen", "Kritis", "Sadar", "Jujur", "Bersih"
+    ];
+    
+    final random = DateTime.now().microsecondsSinceEpoch;
+    final depanIdx = random % kataDepan.length;
+    final belakangIdx = (random ~/ 7) % kataBelakang.length;
+    final nomor = (random ~/ 13) % 900 + 100;
+    
+    return "${kataDepan[depanIdx]} ${kataBelakang[belakangIdx]} $nomor";
+  }
+
   /// Extract category ID from warning message.
   static String? getCategoryId(String note) {
     if (note.startsWith('[') && note.contains(']')) {
