@@ -5,6 +5,7 @@ import '../../data/models/paket_pengadaan.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
 import '../../utils/fuzzy_match.dart';
+import '../../utils/kejanggalan_helper.dart';
 import '../beranda/beranda_provider.dart';
 import 'chip_risiko.dart';
 
@@ -33,22 +34,52 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
   late PaketPengadaan _activePaket;
   int _currentPage = 1;
   static const int _itemsPerPage = 5;
+  List<PaketPengadaan> _paketSerupaList = [];
 
   @override
   void initState() {
     super.initState();
     _activePaket = widget.paket;
+    _updatePaketSerupa();
   }
 
   @override
   void didUpdateWidget(DialogDetailPaket oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.paket != widget.paket) {
-      setState(() {
-        _activePaket = widget.paket;
-        _currentPage = 1;
-      });
+      _activePaket = widget.paket;
+      _updatePaketSerupa();
     }
+  }
+
+  void _updatePaketSerupa() {
+    final allPaket = Provider.of<BerandaProvider>(context, listen: false).paketList;
+    final skpd = _activePaket.namaSatuanKerja.trim();
+    final nama = _activePaket.namaPaket.trim().toLowerCase();
+    final len = nama.length;
+
+    // 1. Filter by SKPD and exclude self (extremely fast pre-filtering)
+    final skpdPakets = allPaket.where((p) {
+      return p.namaSatuanKerja.trim() == skpd && p != _activePaket;
+    }).toList();
+
+    // 2. Perform fuzzy Jaro-Winkler match only on the small subset with length constraint
+    final matched = skpdPakets.where((p) {
+      final otherNama = p.namaPaket.trim().toLowerCase();
+      if (otherNama == nama) return true;
+
+      final otherLen = otherNama.length;
+      if (otherLen < len * 0.5 || otherLen > len * 2.0) {
+        return false;
+      }
+
+      return FuzzyMatch.jaroWinkler(otherNama, nama) >= 0.85;
+    }).toList();
+
+    setState(() {
+      _paketSerupaList = matched;
+      _currentPage = 1;
+    });
   }
 
   Future<void> _bukaTautanSirup(BuildContext context) async {
@@ -187,7 +218,7 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                c,
+                                KejanggalanHelper.clean(c),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: warnaKritis,
@@ -237,37 +268,8 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
     );
   }
 
-  List<PaketPengadaan> _findPaketSerupa(BuildContext context) {
-    try {
-      final allPaket = Provider.of<BerandaProvider>(context, listen: false).paketList;
-      final skpd = _activePaket.namaSatuanKerja.trim();
-      final nama = _activePaket.namaPaket.trim().toLowerCase();
-      final len = nama.length;
-
-      // 1. Filter by SKPD and exclude self (extremely fast pre-filtering)
-      final skpdPakets = allPaket.where((p) {
-        return p.namaSatuanKerja.trim() == skpd && p != _activePaket;
-      }).toList();
-
-      // 2. Perform fuzzy Jaro-Winkler match only on the small subset with length constraint
-      return skpdPakets.where((p) {
-        final otherNama = p.namaPaket.trim().toLowerCase();
-        if (otherNama == nama) return true;
-
-        final otherLen = otherNama.length;
-        if (otherLen < len * 0.5 || otherLen > len * 2.0) {
-          return false;
-        }
-
-        return FuzzyMatch.jaroWinkler(otherNama, nama) >= 0.85;
-      }).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
   Widget _buildPaketSerupaSection(BuildContext context) {
-    final paketSerupa = _findPaketSerupa(context);
+    final paketSerupa = _paketSerupaList;
     if (paketSerupa.isEmpty) return const SizedBox.shrink();
 
     final totalPages = (paketSerupa.length / _itemsPerPage).ceil();
@@ -325,10 +327,8 @@ class _DialogDetailPaketState extends State<DialogDetailPaket> {
                   final item = paginatedList[index];
                   return InkWell(
                     onTap: () {
-                      setState(() {
-                        _activePaket = item;
-                        _currentPage = 1; // Reset to page 1 for the new active package
-                      });
+                      _activePaket = item;
+                      _updatePaketSerupa();
                     },
                     borderRadius: (index == paginatedList.length - 1 && totalPages <= 1)
                         ? const BorderRadius.vertical(bottom: Radius.circular(12))

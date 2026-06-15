@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../data/hive_service.dart';
 import '../../data/models/paket_pengadaan.dart';
 import '../../data/models/skpd_model.dart';
+import '../../utils/kejanggalan_helper.dart';
 
 class SkpdBudgetBreakdown {
   final String namaSkpd;
@@ -146,7 +147,8 @@ class RingkasanProvider with ChangeNotifier {
       }
       final tingkatStr = '"$tingkat"';
 
-      final catatan = '"${p.catatanKejanggalan.join('; ').replaceAll('"', '""')}"';
+      final cleanCatatans = p.catatanKejanggalan.map((c) => KejanggalanHelper.clean(c)).join('; ');
+      final catatan = '"${cleanCatatans.replaceAll('"', '""')}"';
       final sumber = '"${p.sumberDana.replaceAll('"', '""')}"';
       final jenis = '"${p.jenisPengadaan.replaceAll('"', '""')}"';
       final tahun = '"${p.tahunAnggaran.replaceAll('"', '""')}"';

@@ -4,6 +4,7 @@ import 'detail_provider.dart';
 import '../beranda/beranda_provider.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
+import '../../utils/kejanggalan_helper.dart';
 import '../widgets/chip_risiko.dart';
 import '../widgets/dialog_detail_paket.dart';
 
@@ -163,26 +164,18 @@ class DetailScreen extends StatelessWidget {
   Widget _buildPaketCard(BuildContext context, dynamic paket) {
     // Extract specific warning for this category
     String warningNote = "";
-    for (final note in paket.catatanKejanggalan) {
-      if (kategori == 'Penunjukan Langsung Nilai Besar' && note.startsWith("Ditunjuk langsung")) {
-        warningNote = note;
-      } else if (kategori == 'Mendekati Batas Pengadaan Langsung' && note.startsWith("Nilai paket mendekati batas atas")) {
-        warningNote = note;
-      } else if (kategori == 'Nama Paket Berulang di SKPD' && note.startsWith("Nama paket ini muncul")) {
-        warningNote = note;
-      } else if (kategori == 'Nama Paket Berulang Lintas SKPD' && note.startsWith("Paket dengan nama ini ditemukan")) {
-        warningNote = note;
-      } else if (kategori == 'Nilai Paket Sangat Kecil' && note.startsWith("Nilai paket sangat kecil")) {
-        warningNote = note;
-      } else if (kategori == 'Pola Paket Serupa di SKPD' && note.startsWith("Terdapat") && note.contains("serupa")) {
-        warningNote = note;
-      } else if (kategori == 'Indikasi Pecah Paket Pekerjaan' && note.startsWith("Terindikasi pemecahan paket")) {
-        warningNote = note;
+    final catId = KejanggalanHelper.mapKategoriToId(kategori);
+    if (catId != null) {
+      for (final note in paket.catatanKejanggalan) {
+        if (KejanggalanHelper.matches(note, catId)) {
+          warningNote = KejanggalanHelper.clean(note);
+          break;
+        }
       }
     }
 
     if (warningNote.isEmpty && paket.catatanKejanggalan.isNotEmpty) {
-      warningNote = paket.catatanKejanggalan.first;
+      warningNote = KejanggalanHelper.clean(paket.catatanKejanggalan.first);
     }
 
     return Card(

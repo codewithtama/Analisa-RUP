@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../data/models/paket_pengadaan.dart';
 import '../../utils/format_rupiah.dart';
+import '../../utils/kejanggalan_helper.dart';
 
 class DetailProvider with ChangeNotifier {
   List<PaketPengadaan> filteredPakets = [];
@@ -37,27 +38,12 @@ class DetailProvider with ChangeNotifier {
 
     penjelasanKategori = _getPenjelasanKategori(kategori, batasPL, batasPen);
 
+    final catId = KejanggalanHelper.mapKategoriToId(kategori);
+
     filteredPakets = paketList.where((p) {
+      if (catId == null) return false;
       for (final catatan in p.catatanKejanggalan) {
-        if (kategori == 'Penunjukan Langsung Nilai Besar' && catatan.startsWith("Ditunjuk langsung")) {
-          return true;
-        }
-        if (kategori == 'Mendekati Batas Pengadaan Langsung' && catatan.startsWith("Nilai paket mendekati batas atas")) {
-          return true;
-        }
-        if (kategori == 'Nama Paket Berulang di SKPD' && catatan.startsWith("Nama paket ini muncul")) {
-          return true;
-        }
-        if (kategori == 'Nama Paket Berulang Lintas SKPD' && catatan.startsWith("Paket dengan nama ini ditemukan")) {
-          return true;
-        }
-        if (kategori == 'Nilai Paket Sangat Kecil' && catatan.startsWith("Nilai paket sangat kecil")) {
-          return true;
-        }
-        if (kategori == 'Pola Paket Serupa di SKPD' && catatan.startsWith("Terdapat") && catatan.contains("serupa")) {
-          return true;
-        }
-        if (kategori == 'Indikasi Pecah Paket Pekerjaan' && catatan.startsWith("Terindikasi pemecahan paket")) {
+        if (KejanggalanHelper.matches(catatan, catId)) {
           return true;
         }
       }

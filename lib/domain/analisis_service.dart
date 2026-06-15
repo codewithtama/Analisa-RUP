@@ -2,6 +2,7 @@ import '../data/models/paket_pengadaan.dart';
 import '../data/models/hasil_analisis.dart';
 import '../utils/format_rupiah.dart';
 import '../utils/fuzzy_match.dart';
+import '../utils/kejanggalan_helper.dart';
 
 class AnalisisService {
   void analisisSemua(
@@ -108,7 +109,10 @@ class AnalisisService {
           tingkat = 2; // tinggi
         }
         updateTingkat(tingkat);
-        catatans.add("Ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(batasPenunjukan)}. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 38 tentang Ketentuan Penunjukan Langsung)");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idPenunjukanBesar,
+          "Ditunjuk langsung tanpa lelang padahal nilainya di atas ${formatRupiah(batasPenunjukan)}. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 38 tentang Ketentuan Penunjukan Langsung)"
+        ));
       }
 
       // 2. Paket Mendekati Batas Pengadaan Langsung
@@ -120,7 +124,10 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(batasPL)}). Perlu dicek apakah seharusnya dilelang. (Rujukan Perpres No. 12/2021 Pasal 38 Ayat (3))");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idMendekatiBatasPL,
+          "Nilai paket mendekati batas atas Pengadaan Langsung (${formatRupiah(batasPL)}). Perlu dicek apakah seharusnya dilelang. (Rujukan Perpres No. 12/2021 Pasal 38 Ayat (3))"
+        ));
       }
 
       // 3. Nama Paket Berulang dalam Satu Satuan Kerja
@@ -133,7 +140,10 @@ class AnalisisService {
           tingkat = 2;
         }
         updateTingkat(tingkat);
-        catatans.add("Nama paket ini muncul $countInSkpd kali di $skpd. Perlu diperiksa apakah ini pemecahan paket yang disengaja. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idNamaBerulangSkpd,
+          "Nama paket ini muncul $countInSkpd kali di $skpd. Perlu diperiksa apakah ini pemecahan paket yang disengaja. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)"
+        ));
       }
 
       // 4. Nama Paket Berulang di Banyak Satuan Kerja
@@ -145,7 +155,10 @@ class AnalisisService {
           tingkat = 2;
         }
         updateTingkat(tingkat);
-        catatans.add("Paket dengan nama ini ditemukan di $countAcrossSkpd satuan kerja sekaligus. (Rujukan Pengawasan Efisiensi Pengadaan sesuai Perpres No. 12/2021 Pasal 6)");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idNamaBerulangLintas,
+          "Paket dengan nama ini ditemukan di $countAcrossSkpd satuan kerja sekaligus. (Rujukan Pengawasan Efisiensi Pengadaan sesuai Perpres No. 12/2021 Pasal 6)"
+        ));
       }
 
       // 5. Nilai Paket Sangat Kecil
@@ -155,7 +168,10 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Nilai paket sangat kecil (${formatRupiah(paket.totalNilai)}). Perlu konfirmasi apakah data sudah benar. (Potensi Ketidakefisienan Administrasi Pengadaan sesuai Perpres No. 12/2021 Pasal 6)");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idNilaiSangatKecil,
+          "Nilai paket sangat kecil (${formatRupiah(paket.totalNilai)}). Perlu konfirmasi apakah data sudah benar. (Potensi Ketidakefisienan Administrasi Pengadaan sesuai Perpres No. 12/2021 Pasal 6)"
+        ));
       }
 
       // 6. Kata Kunci Paket Berulang Banyak di Satu SKPD
@@ -167,7 +183,10 @@ class AnalisisService {
           tingkat = 3;
         }
         updateTingkat(tingkat);
-        catatans.add("Terdapat $totalClusterSize paket dengan nama serupa (kemiripan >= 85%) di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-pecah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idNamaSerupaSkpd,
+          "Terdapat $totalClusterSize paket dengan nama serupa (kemiripan >= 85%) di satuan kerja ini. Kemungkinan satu pekerjaan besar yang dipecah-pecah. (Indikasi Pelanggaran Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d tentang Larangan Memecah Paket)"
+        ));
       }
 
       // 7. Pola Pecah Paket Menghindari Tender (Advanced Rule)
@@ -177,7 +196,10 @@ class AnalisisService {
       final isNonTender = metodeLower == 'pengadaan langsung' || metodeLower == 'penunjukan langsung';
       if (clusterSize > 1 && totalAkumulasi > batasPL && isNonTender) {
         updateTingkat(3); // Perlu Perhatian Segera
-        catatans.add("Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena terdeteksi kemiripan nama paket >= 85% dalam satu SKPD, dengan total akumulasi nilai non-tender (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3 tentang Pemberantasan Tindak Pidana Korupsi)");
+        catatans.add(KejanggalanHelper.format(
+          KejanggalanHelper.idPecahPaketTender,
+          "Terindikasi pemecahan paket pekerjaan untuk menghindari lelang umum karena terdeteksi kemiripan nama paket >= 85% dalam satu SKPD, dengan total akumulasi nilai non-tender (${formatRupiah(totalAkumulasi)}) melebihi batas Pengadaan Langsung (${formatRupiah(batasPL)}). (Pelanggaran Keras Perpres No. 12/2021 Pasal 20 Ayat (2) Huruf d jo. UU No. 20/2001 Pasal 2/3 tentang Pemberantasan Tindak Pidana Korupsi)"
+        ));
       }
 
       // Save results to paket object
@@ -222,25 +244,25 @@ class AnalisisService {
       }
 
       for (final catatan in p.catatanKejanggalan) {
-        if (catatan.startsWith("Ditunjuk langsung")) {
+        if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idPenunjukanBesar)) {
           c1++;
           v1 += p.totalNilai;
-        } else if (catatan.startsWith("Nilai paket mendekati batas atas")) {
+        } else if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idMendekatiBatasPL)) {
           c2++;
           v2 += p.totalNilai;
-        } else if (catatan.startsWith("Nama paket ini muncul")) {
+        } else if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idNamaBerulangSkpd)) {
           c3++;
           v3 += p.totalNilai;
-        } else if (catatan.startsWith("Paket dengan nama ini ditemukan")) {
+        } else if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idNamaBerulangLintas)) {
           c4++;
           v4 += p.totalNilai;
-        } else if (catatan.startsWith("Nilai paket sangat kecil")) {
+        } else if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idNilaiSangatKecil)) {
           c5++;
           v5 += p.totalNilai;
-        } else if (catatan.startsWith("Terdapat") && catatan.contains("serupa")) {
+        } else if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idNamaSerupaSkpd)) {
           c6++;
           v6 += p.totalNilai;
-        } else if (catatan.startsWith("Terindikasi pemecahan paket")) {
+        } else if (KejanggalanHelper.matches(catatan, KejanggalanHelper.idPecahPaketTender)) {
           c7++;
           v7 += p.totalNilai;
         }

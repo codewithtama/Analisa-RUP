@@ -5,6 +5,7 @@ import '../beranda/beranda_provider.dart';
 import '../../app/theme.dart';
 import '../../utils/format_rupiah.dart';
 import '../../utils/export_service.dart';
+import '../../utils/kejanggalan_helper.dart';
 import '../widgets/chip_risiko.dart';
 import '../widgets/dialog_detail_paket.dart';
 
@@ -490,7 +491,7 @@ class _DaftarPaketScreenState extends State<DaftarPaketScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              c,
+                              KejanggalanHelper.clean(c),
                               style: const TextStyle(fontSize: 11, color: warnaKritis, height: 1.3),
                             ),
                           ),

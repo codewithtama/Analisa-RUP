@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../data/models/paket_pengadaan.dart';
+import 'kejanggalan_helper.dart';
 
 /// Fungsi top-level untuk memproses data Excel di background Isolate (menghindari UI lag).
 List<int>? _buildExcelBytes(List<Map<String, dynamic>> rawData) {
@@ -80,7 +81,7 @@ class ExportService {
         'sumberDana': p.sumberDana,
         'totalNilai': p.totalNilai,
         'tingkatKejanggalan': p.tingkatKejanggalan,
-        'catatanKejanggalan': p.catatanKejanggalan,
+        'catatanKejanggalan': p.catatanKejanggalan.map((c) => KejanggalanHelper.clean(c)).toList(),
       }).toList();
 
       // Jalankan penyusunan dan encoding file Excel di background Isolate
