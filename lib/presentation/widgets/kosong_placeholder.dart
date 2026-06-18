@@ -24,7 +24,14 @@ class KosongPlaceholder extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: warnaPrimer.withValues(alpha: 0.05),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    warnaPrimer.withValues(alpha: 0.12),
+                    warnaAksen.withValues(alpha: 0.08),
+                  ],
+                ),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -37,7 +44,7 @@ class KosongPlaceholder extends StatelessWidget {
             const Text(
               "Belum Ada Data",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: warnaPrimer,
               ),
@@ -49,7 +56,7 @@ class KosongPlaceholder extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.black45,
-                height: 1.4,
+                height: 1.55,
               ),
               textAlign: TextAlign.center,
             ),
